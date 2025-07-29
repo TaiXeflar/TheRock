@@ -675,8 +675,8 @@ if WINDOWS:
 
     if "VISUAL_STUDIO_VERSION" in globals():
         if "VCToolsInstallDir" and "VCToolsVersion" in ENV:
-            VCToolsVersion = os.get("VCToolsVersion")
-            VCToolsInstallDir = os.get("VCToolsInstallDir")
+            VCToolsVersion = os.getenv("VCToolsVersion")
+            VCToolsInstallDir = os.getenv("VCToolsInstallDir")
             print(
                 f"{Emoji_Pass} [{VISUAL_STUDIO_VERSION}/MSVC] Detected MSVC version {VCToolsVersion}."
             )
