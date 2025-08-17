@@ -6,17 +6,10 @@
 #   TheRock Project building system pre-build diagnosis script
 #   License follows TheRock project
 #
-#   Variables: "FULL_UPPER_VARIABLE" are been called to CMake-Like style.
-#      *CMake                  *Python
-#               WIN32 -->               WINDOWS
-#               Linux -->               LINUX
-#       CMAKE_MAJOR_VERSION -->         PYTHON_MAJOR_VERSION
-#
 #   !  Hint: This script doesn't raise/throw back warnings/errors.
 #   This script is for detecting environments use, We do a global scan on all requirements at once.
 #   We do not want users have to fix its environment one-by-one and get frustrated,so the diagnosis won't throw errors on it.
-#   If Users(Yes, It's you! maybe.) running this script have throwback errors, It must have bug in it.
-#       PLZ! Please report it as new issue or open in a new disscus <3
+#   If running this script have throwback errors, Please report it as new issue or open in a new disscus <3
 #
 
 from __future__ import annotations

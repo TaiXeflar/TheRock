@@ -1,5 +1,20 @@
 #!/usr/bin/env python
 
+#!/usr/bin/env python
+
+#
+#   Designed by TaiXeflar, reviewed by Scott Todd, contribute to TheRock team
+#
+#   TheRock Project building system pre-build diagnosis script
+#   License follows TheRock project
+#
+#   !  Hint: This script doesn't raise/throw back warnings/errors.
+#   This script is for detecting environments use, We do a global scan on all requirements at once.
+#   We do not want users have to fix its environment one-by-one and get frustrated,so the diagnosis won't throw errors on it.
+#   If running this script have throwback errors, Please report it as new issue or open in a new disscus <3
+#
+
+
 import sys, time
 
 sys.dont_write_bytecode = True
