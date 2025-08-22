@@ -201,7 +201,9 @@ class Device:
                         r"SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}"
                         + f"\\000{i}\\"
                     )
-                    GPU_CORE_NAME = get_regedit("HKLM", _GPU_REG_KEY, "DriverDesc")
+                    GPU_CORE_NAME = TheRock.amdgpu_llvm_target(
+                        get_regedit("HKLM", _GPU_REG_KEY, "DriverDesc")
+                    )
                     if GPU_CORE_NAME != "Microsoft Basic Display Adapter":
                         GPU_VRAM = get_regedit(
                             "HKLM", _GPU_REG_KEY, "HardwareInformation.qwMemorySize"
@@ -531,7 +533,7 @@ class Device:
 
         elif self._device_gpu_list is None:
             return cstring(
-                f"{Emoji.Warn} Python module 'pywin32' not found. Skip GPU detection.",
+                f"""GPU: \t{Emoji.Warn} Python module 'pywin32' not found. Skip GPU detection.""",
                 "warn",
             )
 

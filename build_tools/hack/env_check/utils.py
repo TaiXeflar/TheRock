@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import Literal, Optional, Union, Tuple
 from pathlib import Path
+import yaml
 
 # Define Color string print.
 
@@ -147,3 +148,18 @@ class TheRock:
 
     """
         )
+
+    @staticmethod
+    def amdgpu_llvm_target(GPU):
+        # Information from https://rocm.docs.amd.com/en/latest/reference/gpu-arch-specs.html
+        with open("env_check/AMDGPU_LLVM_TARGET.yaml", "r") as f:
+            __amdgpu_list = yaml.safe_load(f)
+
+        name_to_gfx = {}
+        for gfx, names in __amdgpu_list.items():
+            for name in names:
+                name_to_gfx[name] = gfx
+
+        gpu_llvm = f"{GPU} ({name_to_gfx[GPU]})" if GPU in name_to_gfx else GPU
+
+        return gpu_llvm
