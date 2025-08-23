@@ -1,14 +1,13 @@
 from __future__ import annotations
-from typing import Literal, Optional, Union, Tuple
 import subprocess
 import os, re, sys, shutil
 from pathlib import Path
 from abc import ABC
 
 
-class find_program(ABC):
+class FindProgram(ABC):
     """
-    # class find_program
+    # class FindProgram
 
     Generally, this class stores programs's version, location.
 
@@ -106,7 +105,7 @@ class find_program(ABC):
 # Find Programs.
 
 
-class FindPython(find_program):
+class FindPython(FindProgram):
     def __init__(self):
         super().__init__()
         self.get_version()
@@ -164,42 +163,42 @@ class FindPython(find_program):
         return sys.implementation.name
 
 
-class FindGit(find_program):
+class FindGit(FindProgram):
     def __init__(self):
         super().__init__()
         self.name = "git"
         self.get_version()
 
 
-class FindGitLFS(find_program):
+class FindGitLFS(FindProgram):
     def __init__(self):
         super().__init__()
         self.name = "git-lfs"
         self.get_version()
 
 
-class FindUV(find_program):
+class FindUV(FindProgram):
     def __init__(self):
         super().__init__()
         self.name = "uv"
         self.get_version()
 
 
-class FindCMake(find_program):
+class FindCMake(FindProgram):
     def __init__(self):
         super().__init__()
         self.name = "cmake"
         self.get_version()
 
 
-class FindCCache(find_program):
+class FindCCache(FindProgram):
     def __init__(self):
         super().__init__()
         self.name = "ccache"
         self.get_version()
 
 
-class FindNinja(find_program):
+class FindNinja(FindProgram):
     def __init__(self):
         super().__init__()
         self.name = "ninja"
@@ -209,7 +208,7 @@ class FindNinja(find_program):
 # MSVC
 
 
-class FindMSVC(find_program):
+class FindMSVC(FindProgram):
     def __init__(self):
         super().__init__()
         self.name = "cl"
@@ -242,7 +241,7 @@ class FindMSVC(find_program):
         return os.getenv("VSCMD_ARG_TGT_ARCH")
 
 
-class FindML64(find_program):
+class FindML64(FindProgram):
     def __init__(self):
         super().__init__()
         self.name = "ml64"
@@ -267,7 +266,7 @@ class FindML64(find_program):
                 self._version = "v140"
 
 
-class FindLIB(find_program):
+class FindLIB(FindProgram):
     def __init__(self):
         super().__init__()
         self.name = "lib"
@@ -292,7 +291,7 @@ class FindLIB(find_program):
                 self._version = "v140"
 
 
-class FindLINK(find_program):
+class FindLINK(FindProgram):
     def __init__(self):
         super().__init__()
         self.name = "link"
@@ -317,7 +316,7 @@ class FindLINK(find_program):
                 self._version = "v140"
 
 
-class FindRC(find_program):
+class FindRC(FindProgram):
     def __init__(self):
         super().__init__()
         self.name = "rc"
@@ -330,42 +329,42 @@ class FindRC(find_program):
             return None
 
 
-class FindGCC(find_program):
+class FindGCC(FindProgram):
     def __init__(self):
         super().__init__()
         self.name = "gcc"
         self.get_version()
 
 
-class FindGXX(find_program):
+class FindGXX(FindProgram):
     def __init__(self):
         super().__init__()
         self.name = "g++"
         self.get_version()
 
 
-class FindGFortran(find_program):
+class FindGFortran(FindProgram):
     def __init__(self):
         super().__init__()
         self.name = "gfortran"
         self.get_version()
 
 
-class FindLD(find_program):
+class FindLD(FindProgram):
     def __init__(self):
         super().__init__()
         self.name = "ld"
         self.get_version()
 
 
-class FindGCC_AR(find_program):
+class FindGCC_AR(FindProgram):
     def __init__(self):
         super().__init__()
         self.name = "ar"
         self.get_version()
 
 
-class FindGCC_AS(find_program):
+class FindGCC_AS(FindProgram):
     def __init__(self):
         super().__init__()
         self.name = "as"
@@ -373,14 +372,14 @@ class FindGCC_AS(find_program):
 
 
 # Find SDKs.
-class FindVS20XX(find_program):
+class FindVS20XX(FindProgram):
     def __init__(self):
         super().__init__()
         self.name = "Visual Studio"
         self.get_version()
 
-    def get_version(self):
-        _vs_ver = os.getenv("VisualStudioVersion")
+    def get_version(self) -> str:
+        _vs_ver = float(os.getenv("VisualStudioVersion"))
         match _vs_ver:
             case 17.0:
                 return "VS2022"

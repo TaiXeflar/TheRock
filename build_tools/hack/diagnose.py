@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-#!/usr/bin/env python
-
 #
 #   Designed by TaiXeflar, reviewed by Scott Todd, contribute to TheRock team
 #
@@ -19,20 +17,18 @@ import sys, time
 
 sys.dont_write_bytecode = True
 
-from env_check.utils import TheRock, cstring
-from env_check.device import Device
+from env_check.utils import RepoInfo, cstring
+from env_check.device import SystemInfo
 from env_check.check_tools import *
 from env_check import check_therock
 
 
 def main():
     therock_detect_start = time.perf_counter()
-    device = Device()
-    TheRock.__logo__()
+    device = SystemInfo()
+    RepoInfo.__logo__()
 
     device.summary
-
-    # check_therock.test_list().run()
 
     check_therock.test_list().summary
 

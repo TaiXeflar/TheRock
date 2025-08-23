@@ -1,16 +1,15 @@
 from __future__ import annotations
-from typing import Literal, Optional, Union, Tuple
-from types import EllipsisType, NoneType
-import os, re, sys, shutil
+from typing import Literal
+import os
 from pathlib import Path
 from abc import ABC
 from .utils import cstring, Emoji
 from .find_tools import *
-from .device import Device
+from .device import SystemInfo
 
 
 def msg_stat(status: Literal["pass", "warn", "err"], program: str, message: str):
-    if isinstance(program, find_program):
+    if isinstance(program, FindProgram):
         match status:
             case "pass":
                 _emoji = Emoji.Pass
@@ -30,7 +29,7 @@ def msg_stat(status: Literal["pass", "warn", "err"], program: str, message: str)
             case "err":
                 _emoji = Emoji.Err
 
-        return f"[{_emoji}][{program}] {message}"
+        return f"[{_emoji}][{cstring(program, status)}] {message}"
 
 
 class Check_List:
@@ -61,10 +60,10 @@ class Check_List:
 # Program Checkers.
 
 
-class check_program(ABC):
+class CheckProgram(ABC):
     def __init__(self, required: bool = True):
         super().__init__()
-        self.program = find_program()
+        self.program = FindProgram()
         self.condition = required
         self.name = "Name"
 
@@ -79,12 +78,18 @@ class check_program(ABC):
         if program.exe is None and required:
             _stat = msg_stat("err", name, f"Cannot Find {name}.")
             _except = cstring(
-                f"""\n\tProgram {self.name} not found. Please Install it."""
+                f"""
+    Program {self.name} not found. Please Install it.""",
+                "err",
             )
             _result = None
         elif program.exe is None and not required:
             _stat = msg_stat("warn", name, f"Cannot Find {name}.")
-            _except = cstring(f"""\n\tOptional {name} not found.""", "warn")
+            _except = cstring(
+                f"""
+    Optional {name} not found.""",
+                "warn",
+            )
             _result = ...
         elif program.exe:
             _stat = msg_stat("pass", name, f"Found {name} at {program.exe}")
@@ -94,7 +99,7 @@ class check_program(ABC):
         return _stat, _except, _result
 
 
-class CheckPython(check_program):
+class CheckPython(CheckProgram):
     def __init__(self):
         super().__init__()
         self.python = FindPython()
@@ -229,28 +234,28 @@ class CheckPython(check_program):
         return _stat, _except, _result
 
 
-class CheckGit(check_program):
+class CheckGit(CheckProgram):
     def __init__(self, required=True):
         super().__init__(required)
         self.program = FindGit()
         self.name = "Git"
 
 
-class CheckGitLFS(check_program):
+class CheckGitLFS(CheckProgram):
     def __init__(self, required=True):
         super().__init__(required)
         self.program = FindGitLFS()
         self.name = "Git-LFS"
 
 
-class CheckUV(check_program):
+class CheckUV(CheckProgram):
     def __init__(self, required=False):
         super().__init__(required)
         self.program = FindUV()
         self.name = "Astral UV"
 
 
-class CheckCMake(check_program):
+class CheckCMake(CheckProgram):
     def __init__(self, required=True):
         super().__init__(required)
         self.program = FindCMake()
@@ -319,14 +324,14 @@ class CheckCMake(check_program):
         return _stat, _except, _result
 
 
-class CheckCCache(check_program):
+class CheckCCache(CheckProgram):
     def __init__(self, required=False):
         super().__init__(required)
         self.program = FindCCache()
         self.name = "CCache"
 
 
-class CheckNinja(check_program):
+class CheckNinja(CheckProgram):
     def __init__(self, required=True):
         super().__init__(required)
         self.program = FindNinja()
@@ -344,42 +349,42 @@ GCC:: Binutils/ld
 """
 
 
-class CheckGCC(check_program):
+class CheckGCC(CheckProgram):
     def __init__(self, required=True):
         super().__init__(required)
         self.program = FindGCC()
         self.name = "gcc"
 
 
-class CheckGXX(check_program):
+class CheckGXX(CheckProgram):
     def __init__(self, required=True):
         super().__init__(required)
         self.program = FindGXX()
         self.name = "g++"
 
 
-class CheckGFortran(check_program):
+class CheckGFortran(CheckProgram):
     def __init__(self, required=True):
         super().__init__(required)
         self.program = FindGFortran()
         self.name = "gfortran"
 
 
-class CheckGCC_AR(check_program):
+class CheckGCC_AR(CheckProgram):
     def __init__(self, required=True):
         super().__init__(required)
         self.program = FindGCC_AR()
         self.name = "Binutils"
 
 
-class CheckGCC_AS(check_program):
+class CheckGCC_AS(CheckProgram):
     def __init__(self, required=True):
         super().__init__(required)
         self.program = FindGCC_AS()
         self.name = "Binutils"
 
 
-class CheckLD(check_program):
+class CheckLD(CheckProgram):
     def __init__(self, required=True):
         super().__init__(required)
         self.program = FindLD()
@@ -397,7 +402,7 @@ MSVC:: Windows SDK
 """
 
 
-class CheckMSVC(check_program):
+class CheckMSVC(CheckProgram):
     def __init__(self, required=True):
         super().__init__(required)
         self.program = FindMSVC()
@@ -462,7 +467,7 @@ class CheckMSVC(check_program):
         return _stat, _except, _result
 
 
-class CheckML64(check_program):
+class CheckML64(CheckProgram):
     def __init__(self, required=True):
         super().__init__(required)
         self.program = FindML64()
@@ -505,7 +510,7 @@ class CheckML64(check_program):
         return _stat, _except, _result
 
 
-class CheckLIB(check_program):
+class CheckLIB(CheckProgram):
     def __init__(self, required=True):
         super().__init__(required)
         self.program = FindLIB()
@@ -535,7 +540,7 @@ class CheckLIB(check_program):
         return _stat, _except, _result
 
 
-class CheckLINK(check_program):
+class CheckLINK(CheckProgram):
     def __init__(self, required=True):
         super().__init__(required)
         self.program = FindLINK()
@@ -567,7 +572,7 @@ class CheckLINK(check_program):
         return _stat, _except, _result
 
 
-class CheckRC(check_program):
+class CheckRC(CheckProgram):
     def __init__(self, required=True):
         super().__init__(required)
         self.program = FindRC()
@@ -606,7 +611,7 @@ class CheckRC(check_program):
         return _stat, _except, _result
 
 
-class CheckATL(check_program):
+class CheckATL(CheckProgram):
     def __init__(self, required=True):
         super().__init__(required)
         self.name = "MSVC/ATL"
@@ -641,14 +646,14 @@ class CheckATL(check_program):
         return _stat, _except, _result
 
 
-class CheckVS20XX(check_program):
+class CheckVS20XX(CheckProgram):
     def __init__(self, required=True):
         super().__init__(required)
         self.program = FindVS20XX()
         self.name = "Visual Studio"
 
     def check(self):
-        vs20xx = self.program
+        vs20xx = self.program.get_version()
         name = self.name
         if vs20xx is None:
             _stat = msg_stat(
@@ -678,7 +683,7 @@ class CheckVS20XX(check_program):
 
 
 class check_device(ABC):
-    def __init__(self, device_info: Device):
+    def __init__(self, device_info: SystemInfo):
         super().__init__()
         self.device = device_info
         self.name = "Name"
@@ -820,10 +825,9 @@ class CheckDisk(check_device):
 
     def check(self):
         name = self.name
-        _disk_avail = self.device.DISK_AVAIL_SPACE
-        _disk_ratio = self.device.DISK_USAGE_RATIO
-        _disk_drive = self.device.DISK_REPO_MOUNT
-
+        _disk_avail = self.device._device_disk_stat[4]
+        _disk_ratio = self.device._device_disk_stat[5]
+        _disk_drive = self.device._device_disk_stat[2]
         if _disk_avail < 128 or _disk_ratio > 80:
             _stat = msg_stat("warn", self.name, f"Disk space check attention.")
             _except = cstring(

@@ -1,7 +1,7 @@
 from .check_tools import *
-from .device import Device
+from .device import SystemInfo
 
-device = Device()
+device = SystemInfo()
 
 if device.is_windows:
     my_list = [

@@ -2,10 +2,14 @@ from __future__ import annotations
 from .find_tools import FindPython, FindMSVC
 from .utils import *
 import platform, re, sys, os
+from pathlib import PureWindowsPath
 
 
-class Device:
+class SystemInfo:
     def __init__(self):
+
+        self._os = platform.system().capitalize()
+
         self._device_os_stat = self.device_os_status()
 
         # Define CPU configuration.
@@ -21,25 +25,23 @@ class Device:
         self._device_disk_stat = self.device_disk_status()
 
         self._py = FindPython()
-        self._cl = FindMSVC()
 
-    @property
-    def OS(self):
-        return platform.system().capitalize()
+        if self.is_windows:
+            self._cl = FindMSVC()
 
     # Define the device's system is Windows Operating System (Win32).
     @property
     def is_windows(self):
-        return True if self.OS == "Windows" else False
+        return self._os == "Windows"
 
     @property
     def is_linux(self):
-        return True if self.OS == "Linux" else False
+        return self._os == "Linux"
 
     @property
     def OS_NAME(self):
         if self.is_windows:
-            return f"{self._device_os_stat[0]} {self._device_os_stat[1]} ({self._device_os_stat[2]})"
+            return f"{self._device_os_stat[0]} {self._device_os_stat[1]} ({self._device_os_stat[2]}, Build {self._device_os_stat[3]})"
         elif self.is_linux:
             return f"{self._device_os_stat[0]} {self._device_os_stat[1]}"
 
@@ -91,7 +93,7 @@ class Device:
         - Others: -> `None`.
         """
 
-        if self.OS == "Windows":
+        if self.is_windows:
             _os_major = platform.release()
             _os_build = platform.version()
             _os_update = get_regedit(
@@ -101,22 +103,11 @@ class Device:
             )
 
             return (platform.system(), _os_major, _os_update, _os_build)
-        elif self.OS == "Linux":
-            with open("/proc/version", "r") as f:
-                _f = f.read().splitlines()
-                for _line in _f:
-                    _kernel_match = re.match(
-                        r"Linux version (\d+)\.(\d+)\.(\d+)\.(\d+)", _line
-                    )
-                    (
-                        _LINUX_KERNEL_MAJOR_VERSION,
-                        _LINUX_KERNEL_MINOR_VERSION,
-                        _,
-                        _,
-                    ) = map(int, _kernel_match.groups())
-                    _LINUX_KERNEL_VERSION = (
-                        f"{_LINUX_KERNEL_MAJOR_VERSION}.{_LINUX_KERNEL_MINOR_VERSION}"
-                    )
+
+        elif self.is_linux:
+            kernel = subprocess.check_output(["uname", "-r"], text=True).strip()
+            kernel_version = kernel.split("-")[0]
+
             with open("/etc/os-release") as f:
                 _f = f.read().splitlines()
                 for _line in _f:
@@ -132,7 +123,7 @@ class Device:
                 _LINUX_DISTRO_NAME,
                 _LINUX_DISTRO_VERSION,
                 "GNU/Linux",
-                _LINUX_KERNEL_VERSION,
+                kernel_version,
             )
         else:
             pass
@@ -201,7 +192,7 @@ class Device:
                         r"SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}"
                         + f"\\000{i}\\"
                     )
-                    GPU_CORE_NAME = TheRock.amdgpu_llvm_target(
+                    GPU_CORE_NAME = RepoInfo.amdgpu_llvm_target(
                         get_regedit("HKLM", _GPU_REG_KEY, "DriverDesc")
                     )
                     if GPU_CORE_NAME != "Microsoft Basic Display Adapter":
@@ -283,7 +274,7 @@ class Device:
         - `DISK_DEVICE`: Returns `str`. The device "contains this repo" name and its mounting point.
          - Windows: Returns a Drive Letter. eg `F:/` or `F:`
          - Linux: Returns disk's mounted device name and its mounting point. eg `/dev/sdd at: /`
-        - `DISK_REPO_POINT`: Returns `str`. TheRock current repo abs path.
+        - `DISK_REPO_POINT`: Returns `str`. RepoInfo current repo abs path.
         - `DISK_TOTAL_SPACE`: Returns `float`. Current repo stored disk's total space.
         - `DISK_USAGE_SPACE`: Returns `float`. Current repo stored disk's used space.
         - `DISK_AVAIL_SPACE`: Returns `float`. Current repo stored disk's avail space.
@@ -292,11 +283,10 @@ class Device:
 
         import os, subprocess
         from shutil import disk_usage
-        from pathlib import Path
 
         if self.is_windows:
-            repo_path = TheRock.repo()
-            repo_disk = os.path.splitdrive(repo_path)[0]
+            repo_path = RepoInfo.repo()
+            repo_disk = PureWindowsPath(__file__).drive
 
             DISK_TOTAL_SPACE, DISK_USAGE_SPACE, DISK_AVAIL_SPACE = disk_usage(repo_disk)
 
@@ -308,14 +298,14 @@ class Device:
             return (
                 repo_path,
                 repo_disk,
-                DISK_TOTAL_SPACE,
-                DISK_USAGE_SPACE,
-                DISK_AVAIL_SPACE,
-                DISK_USAGE_RATIO,
+                round(DISK_TOTAL_SPACE, 2),
+                round(DISK_USAGE_SPACE, 2),
+                round(DISK_AVAIL_SPACE, 2),
+                round(DISK_USAGE_RATIO, 2),
             )
 
         elif self.is_linux:
-            repo_path = TheRock.repo()
+            repo_path = RepoInfo.repo()
             DISK_STATUS_QUERY = (
                 subprocess.run(
                     ["df", "-h", os.getcwd()],
@@ -343,65 +333,33 @@ class Device:
             return (
                 repo_path,
                 f"{DISK_MOUNT_DEVICE} at: {DISK_MOUNT_POINT}",
-                DISK_TOTAL_SPACE,
-                DISK_USAGE_SPACE,
-                DISK_AVAIL_SPACE,
-                DISK_USAGE_RATIO,
+                round(DISK_TOTAL_SPACE, 2),
+                round(DISK_USAGE_SPACE, 2),
+                round(DISK_AVAIL_SPACE, 2),
+                round(DISK_USAGE_RATIO, 2),
             )
 
-    if True:
+    @property
+    def python(self):
+        return self._py
 
-        @property
-        def python(self):
-            return self._py
+    @property
+    def CPU_NAME(self):
+        return self._device_cpu_stat[0]
+
+    @property
+    def CPU_CORE(self):
+        return self._device_cpu_stat[1]
+
+    @property
+    def CPU_ARCH(self):
+        return self._device_cpu_stat[2]
+
+    if is_windows:
 
         @property
         def cl(self):
             return self._cl
-
-        @property
-        def CPU_NAME(self):
-            return self._device_cpu_stat[0]
-
-        @property
-        def CPU_CORE(self):
-            return self._device_cpu_stat[1]
-
-        @property
-        def CPU_ARCH(self):
-            return self._device_cpu_stat[2]
-
-        @property
-        def PHYSICAL_MEMORY_TOTAL(self):
-            return self._device_dram_stat[0]
-
-        @property
-        def PHYSICAL_MEMORY_AVAIL(self):
-            return self._device_dram_stat[1]
-
-        @property
-        def DISK_REPO_PATH(self):
-            return self._device_disk_stat[0]
-
-        @property
-        def DISK_REPO_MOUNT(self):
-            return self._device_disk_stat[1]
-
-        @property
-        def DISK_TOTAL_SPACE(self):
-            return self._device_disk_stat[2]
-
-        @property
-        def DISK_USED_SPACE(self):
-            return self._device_disk_stat[3]
-
-        @property
-        def DISK_AVAIL_SPACE(self):
-            return self._device_disk_stat[4]
-
-        @property
-        def DISK_USAGE_RATIO(self):
-            return self._device_disk_stat[5]
 
         @property
         def VSVER(self):
@@ -529,11 +487,11 @@ class Device:
             return _gpulist
 
         elif self.is_linux:
-            return cstring(f"{Emoji.Warn} Skip GPU detection on Linux.", "warn")
+            return cstring(f"GPU: \tSkip GPU detection on Linux.", "warn")
 
         elif self._device_gpu_list is None:
-            return cstring(
-                f"""GPU: \t{Emoji.Warn} Python module 'pywin32' not found. Skip GPU detection.""",
+            return f"GPU: \t" + cstring(
+                """! Python module 'pywin32' not found. Skip GPU detection.""",
                 "warn",
             )
 
@@ -541,14 +499,14 @@ class Device:
     @property
     def MEM_STATUS(self):
         if self.is_windows:
-            return f"""Total Physical Memory: {self.PHYSICAL_MEMORY_TOTAL:.2f} GB
-                Avail Physical Memory: {self.PHYSICAL_MEMORY_AVAIL:.2f} GB
-                Avail Virtual Memory: {self.VIRTUAL_MEMORY_AVAIL:.2f} GB
+            return f"""Total Physical Memory: {self._device_dram_stat[0]:.2f} GB
+                Avail Physical Memory: {self._device_dram_stat[1]:.2f} GB
+                Avail Virtual  Memory: {self._device_dram_stat[2]:.2f} GB
             """
         elif self.is_linux:
-            return f"""Total Physical Memory: {self.PHYSICAL_MEMORY_TOTAL:.2f} GB
-                Avail Physical Memory: {self.PHYSICAL_MEMORY_AVAIL:.2f} GB
-                Avail Swap Memory: {self.SWAP_MEMORY_AVAIL:.2f} GB
+            return f"""Total Physical Memory: {self._device_dram_stat[0]:.2f} GB
+                Avail Physical Memory: {self._device_dram_stat[1]:.2f} GB
+                Avail Swap Memory: {self._device_dram_stat[2]:.2f} GB
             """
         else:
             pass
@@ -556,11 +514,11 @@ class Device:
     # Define Disk Device status.
     @property
     def DISK_STATUS(self):
-        return f"""Disk Total Space: {self.DISK_TOTAL_SPACE:.2f} GB
-                Disk Avail Space: {self.DISK_AVAIL_SPACE:.2f} GB
-                Disk Used: {self.DISK_USED_SPACE:.2f} GB
-                Disk Usage: {self.DISK_USAGE_RATIO:.2f} %
-                Current Repo path: {self.DISK_REPO_PATH}, Disk Device: {self.DISK_REPO_MOUNT}
+        return f"""Disk Total Space: {self._device_disk_stat[2]} GB
+                Disk Avail Space: {self._device_disk_stat[4]} GB
+                Disk Used  Space: {self._device_disk_stat[3]} GB
+                Disk Usage: {self._device_disk_stat[5]} %
+                Current Repo path: {self._device_disk_stat[0]}, Disk Device: {self._device_disk_stat[1]}
         """
 
     @property
@@ -580,7 +538,6 @@ class Device:
         if self.is_windows:
 
             _vs20xx_stat = self.VS20XX if self.VS20XX else "Not Detected"
-            _vs20xx_msvc = self.VC_VER if self.VC_VER else "Not Detected"
             _vs20xx_sdk = self.VC_SDK if self.VC_SDK else "Not Detected"
 
             _hipcc_stat = self.HIP_PATH if self.HIP_PATH else "Not Detected"

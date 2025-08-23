@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Literal, Optional, Union, Tuple
-from pathlib import Path
+import subprocess
 import yaml
 
 # Define Color string print.
@@ -84,12 +84,12 @@ def get_regedit(
 
 
 class Emoji:
-    Pass = "✅"
-    Warn = "⚠️"
-    Err = "❌"
+    Pass = cstring("✓", "pass")
+    Warn = cstring("!", "warn")
+    Err = cstring("✗", "err")
 
 
-class TheRock:
+class RepoInfo:
     """
     ## TheRock class
     AMD ROCm/TheRock project.
@@ -104,16 +104,13 @@ class TheRock:
 
     @staticmethod
     def head():
-        try:
-            with open(Path(f"{TheRock.repo()}/.git/refs/heads/main").resolve()) as f:
-                local_sha = f.read().strip()
-                return local_sha[:7]
-        except FileNotFoundError as e:
-            return "Unknown"
+        _head = subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True
+        ).stdout.strip()
+        return _head
 
     @staticmethod
     def repo():
-        import subprocess
 
         finder = subprocess.run(
             ["git", "rev-parse", "--show-toplevel"], capture_output=True, text=True
@@ -140,7 +137,7 @@ class TheRock:
     {cstring("                   ◼ ◼ ◼","err")}
     {cstring("       ◼           ◼ ◼ ◼","err")}\t  Build Environment diagnosis script
     {cstring("     ◼ ◼           ◼ ◼ ◼","err")}
-    {cstring("   ◼ ◼ ◼           ◼ ◼ ◼","err")}\t  Version TheRock (current HEAD: {cstring(TheRock.head(), "err")})
+    {cstring("   ◼ ◼ ◼           ◼ ◼ ◼","err")}\t  Version TheRock (current HEAD: {cstring(RepoInfo.head(), "err")})
     {cstring("   ◼ ◼ ◼ ◼ ◼ ◼ ◼   ◼ ◼ ◼","err")}
     {cstring("   ◼ ◼ ◼ ◼ ◼ ◼       ◼ ◼","err")}
     {cstring("   ◼ ◼ ◼ ◼ ◼           ◼","err")}

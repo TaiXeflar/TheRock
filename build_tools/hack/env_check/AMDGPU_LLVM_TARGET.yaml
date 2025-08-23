@@ -5,10 +5,10 @@
 #     https://rocm.docs.amd.com/en/latest/reference/gpu-arch-specs.html
 #     https://www.techpowerup.com/gpu-specs/
 #   ]
+# Note: New devices should be added to this list as they become available.
 
 # Add list: From Radeon -> Radeon Pro -> Radeon MI / CDNA.
-# TODO: Add CDNA if CDNA is supported on Windows.
-# TODO: Add UDNA detect support in future.
+
 
 # RDNA 3
 gfx1100: [
