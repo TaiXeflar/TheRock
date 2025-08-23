@@ -1,7 +1,6 @@
 from __future__ import annotations
 from typing import Literal, Optional, Union, Tuple
 import subprocess
-import yaml
 
 # Define Color string print.
 
@@ -149,11 +148,10 @@ class RepoInfo:
     @staticmethod
     def amdgpu_llvm_target(GPU):
         # Information from https://rocm.docs.amd.com/en/latest/reference/gpu-arch-specs.html
-        with open("env_check/AMDGPU_LLVM_TARGET.yaml", "r") as f:
-            __amdgpu_list = yaml.safe_load(f)
+        from env_check import AMDGPU_LLVM_TARGET
 
         name_to_gfx = {}
-        for gfx, names in __amdgpu_list.items():
+        for gfx, names in AMDGPU_LLVM_TARGET._amdgpu.items():
             for name in names:
                 name_to_gfx[name] = gfx
 
