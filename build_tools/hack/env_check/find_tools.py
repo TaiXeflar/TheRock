@@ -379,7 +379,11 @@ class FindVS20XX(FindProgram):
         self.get_version()
 
     def get_version(self) -> str:
-        _vs_ver = float(os.getenv("VisualStudioVersion"))
+        _vs_ver = os.getenv("VisualStudioVersion")
+        if _vs_ver is None:
+            return None
+        else:
+            _vs_ver = float(os.getenv("VisualStudioVersion"))
         match _vs_ver:
             case 17.0:
                 return "VS2022"
