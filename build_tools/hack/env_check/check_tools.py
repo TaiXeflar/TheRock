@@ -429,7 +429,7 @@ class CheckMSVC(CheckProgram):
         - CMake for Windows
         - C++ Address Sanitizer
 
-        traceback: Required VC++ compiler not found
+        traceback: Required MSVC compiler not found
     """,
                 "err",
             )
@@ -483,7 +483,7 @@ class CheckML64(CheckProgram):
             _except = cstring(
                 f"""
     We can't found any available Microsoft Macro Assembler on your Windows device.
-    ml64.exe is the Assembler for native Windows development.
+    ml64.exe is the Assembler program for native Windows development.
     Please re-configure your Visual Studio installed C/C++ correctly.
         Visual Studio Installer > C/C++ Development for Desktop:
         - MSVC v14X
@@ -492,7 +492,8 @@ class CheckML64(CheckProgram):
         - Windows SDK 10.0.XXXXX
         - CMake for Windows
         - C++ Address Sanitizer
-        traceback: Required Macro Assembler not found
+
+        traceback: Required MSVC Assembler not found
     """,
                 "err",
             )
@@ -525,7 +526,7 @@ class CheckLIB(CheckProgram):
     We cannot find MSVC toolchain's archiver.
     Please check your Microsoft VC++ installation is correct, or re-check if the install is broken.
 
-        traceback: MSVC lib.exe ({lib.exe}) not found
+        traceback: Missing MSVC required linker compoments
     """,
                 "err",
             )
@@ -557,6 +558,7 @@ class CheckLINK(CheckProgram):
                 f"""
     We cannot find MSVC linker link.exe (Microsoft Incremental Linker).
     Please re-check your MSVC installation if it's broken.
+
         traceback: Missing MSVC required linker compoments link.exe
     """,
                 "err",
@@ -750,6 +752,7 @@ class CheckOS(check_device):
                 f"""
     Found Linux distro {self.device.OS_NAME} is WSL2 environment.
     WSL2 is not yet supported. Please use native Linux or native Windows instead.
+
         traceback: Detected Linux is WSL2
     """,
                 "err",
@@ -764,6 +767,7 @@ class CheckOS(check_device):
     We found your Operating System is {_os},  and it's not supported yet.
     Please select x86-64 based Linux or Windows platform for TheRock build.
     We're sorry for any inconvinence.
+
         traceback: Invalid Operating System {_os}
     """,
                 "err",
@@ -808,6 +812,7 @@ class CheckCPU(check_device):
     We detected unsupported CPU Architecture {_cpu_arch}.
     TheRock project currently support x86-64 Architectures, Like AMD RYZEN/Althon/EPYC or Intel Core/Core Ultra/Xeon.
     We're sorry for any inconvinence.
+
         traceback: Unsupported CPU Architecture {_cpu_arch}
     """,
                 "err",
