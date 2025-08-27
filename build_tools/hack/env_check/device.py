@@ -173,40 +173,41 @@ class SystemInfo:
     def device_gpu_list(self):
         """
         Returns a list contains GPU info tuple on Windows platform.
-        If on Linux or Windows python environment have no `pywin32` module, we skip test as return `None`.
+        If on Linux, we skip test as return `None`.
         - Windows: `[(GPU_NUM, GPU_NAME, GPU_VRAM), (...), ...]` or `None`
         - Linux: `None`
         - Others: `None`
         """
         if self.is_windows:
-            GPU_STATUS_LIST = []
-            try:
-                from win32com import client
+            gpu_status_list = []
 
-                GPU_COUNT = len(
-                    client.GetObject("winmgmts:").InstancesOf("Win32_VideoController")
+            gpu_result = subprocess.run(
+                ["wmic", "path", "win32_VideoController", "get", "Name"],
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+            )
+            gpu_result_lines = [
+                line.strip() for line in gpu_result.stdout.splitlines() if line.strip()
+            ]
+            gpu_count = len(gpu_result_lines[1:]) if len(gpu_result_lines) > 1 else []
+
+            for i in range(0, gpu_count):
+                _GPU_REG_KEY = str(
+                    r"SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}"
+                    + f"\\000{i}\\"
                 )
-
-                for i in range(0, GPU_COUNT):
-                    _GPU_REG_KEY = str(
-                        r"SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}"
-                        + f"\\000{i}\\"
+                _GPU_CORE_NAME = RepoInfo.amdgpu_llvm_target(
+                    get_regedit("HKLM", _GPU_REG_KEY, "DriverDesc")
+                )
+                if _GPU_CORE_NAME != "Microsoft Basic Display Adapter":
+                    _GPU_VRAM = get_regedit(
+                        "HKLM", _GPU_REG_KEY, "HardwareInformation.qwMemorySize"
                     )
-                    GPU_CORE_NAME = RepoInfo.amdgpu_llvm_target(
-                        get_regedit("HKLM", _GPU_REG_KEY, "DriverDesc")
+                    gpu_status_list.append(
+                        (i, f"{_GPU_CORE_NAME}", float(_GPU_VRAM / (1024**3)))
                     )
-                    if GPU_CORE_NAME != "Microsoft Basic Display Adapter":
-                        GPU_VRAM = get_regedit(
-                            "HKLM", _GPU_REG_KEY, "HardwareInformation.qwMemorySize"
-                        )
-                        GPU_STATUS_LIST.append(
-                            (i, f"{GPU_CORE_NAME}", float(GPU_VRAM / (1024**3)))
-                        )
-                    else:
-                        pass
-                return GPU_STATUS_LIST
-            except ModuleNotFoundError as e:
-                return None
+            return gpu_status_list
         else:
             return None
 
@@ -488,12 +489,6 @@ class SystemInfo:
 
         elif self.is_linux:
             return cstring(f"GPU: \tSkip GPU detection on Linux.", "warn")
-
-        elif self._device_gpu_list is None:
-            return f"GPU: \t" + cstring(
-                """! Python module 'pywin32' not found. Skip GPU detection.""",
-                "warn",
-            )
 
     # Define Memory Device status.
     @property
