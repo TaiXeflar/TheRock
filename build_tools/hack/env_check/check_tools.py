@@ -378,7 +378,7 @@ class CheckGCC(CheckProgram):
             _stat = msg_stat(
                 "err",
                 self.name,
-                f"Found GCC compiler program {gcc.version} targeting Windows x64.",
+                f"Found GCC compiler program gcc {gcc.version} targeting Windows x64.",
             )
             _except = cstring(
                 f"""
