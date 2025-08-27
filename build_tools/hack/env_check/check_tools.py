@@ -273,6 +273,9 @@ class CheckCMake(CheckProgram):
         sh $ apt/dnf install cmake
         sh $ pacman -S cmake
 
+    You can find ROCm/TheRock latest required CMake here:
+        https://github.com/ROCm/TheRock/blob/main/docs/environment_setup_guide.md#common-issues
+
         traceback: Required CMake program not installed or in PATH
     """,
                 "err",
@@ -287,6 +290,8 @@ class CheckCMake(CheckProgram):
             _except = cstring(
                 f"""
     TheRock requires CMake version >= 3.25, but found {self.program.version}.
+    You can find ROCm/TheRock latest required CMake here:
+        https://github.com/ROCm/TheRock/blob/main/docs/environment_setup_guide.md#common-issues
 
         traceback: CMake program too old excluded by TheRock Top-Level CMakeLists.txt rules `cmake_minimum_required()`
             expected: 3.25.X ≤ cmake ≤ 3.31.X, found {self.program.version}
@@ -304,6 +309,8 @@ class CheckCMake(CheckProgram):
                 f"""
     The support of CMake 4 is still under development, and the different CMake version behavior may effect TheRock build.
     If your build requires stable build, please downgrade it and re-try again.
+    You can find ROCm/TheRock latest required CMake here:
+        https://github.com/ROCm/TheRock/blob/main/docs/environment_setup_guide.md#common-issues
 
         traceback: CMake program too new may cause unstable
             expected: 3.25.X ≤ cmake ≤ 3.31.X, found {self.program.version}
@@ -338,68 +345,318 @@ class CheckNinja(CheckProgram):
         self.name = "Ninja-Build"
 
 
-# GCC compiler toolchain
-"""
-GCC:: gcc
-GCC:: g++
-GCC:: gfortran
-GCC:: Binutils/ar
-GCC:: Binutils/as
-GCC:: Binutils/ld
-"""
+# =====  GCC Toolchain  =====
 
 
 class CheckGCC(CheckProgram):
     def __init__(self, required=True):
         super().__init__(required)
         self.program = FindGCC()
-        self.name = "gcc"
+        self.name = "GCC/gcc"
+
+    def check(self):
+        gcc = self.program
+        if gcc.exe is None:
+            _stat = msg_stat("err", self.name, f"GCC compiler program gcc not found.")
+            _except = cstring(
+                f"""
+    TheRock needs installed GCC program {self.name}.
+
+        traceback: Missing GCC compiler program gcc""",
+                "err",
+            )
+            _result = None
+        elif gcc.target == "x64":
+            _stat = msg_stat(
+                "pass",
+                self.name,
+                f"Found GCC compiler program gcc {gcc.version} at {gcc.exe}",
+            )
+            _except = ""
+            _result = True
+        elif gcc.target == "MinGW-x64":
+            _stat = msg_stat(
+                "err",
+                self.name,
+                f"Found GCC compiler program {gcc.version} targeting Windows x64.",
+            )
+            _except = cstring(
+                f"""
+    TheRock not support using MinGW cross compiling from x86-64 Linux to x64 Windows.
+    For Windows builds, please build in Windows OS with Visual Studio environment.
+    You can find Windows build instructions here:
+        https://github.com/ROCm/TheRock/blob/main/docs/development/windows_support.md
+
+        traceback: Invalid crossing build target {gcc.target}""",
+                "err",
+            )
+            _result = None
+        elif gcc.target != "x64":
+            _stat = msg_stat(
+                "err",
+                self.name,
+                f"Found GCC compiler program {gcc.version} targeting {gcc.target}.",
+            )
+            _except = cstring(
+                f"""
+    TheRock not support cross compiling to target {gcc.target}.
+
+        traceback: Invalid crossing build target {gcc.target}""",
+                "err",
+            )
+            _result = None
+        return _stat, _except, _result
 
 
 class CheckGXX(CheckProgram):
     def __init__(self, required=True):
         super().__init__(required)
         self.program = FindGXX()
-        self.name = "g++"
+        self.name = "GCC/g++"
+
+    def check(self):
+        gxx = self.program
+        if gxx.exe is None:
+            _stat = msg_stat("err", self.name, f"GCC compiler program g++ not found.")
+            _except = cstring(
+                f"""
+    TheRock needs installed GCC program {self.name}.
+
+        traceback: Missing GCC compiler program {self.name}""",
+                "err",
+            )
+            _result = None
+        elif gxx.target == "x64":
+            _stat = msg_stat(
+                "pass",
+                self.name,
+                f"Found GCC compiler program g++ {gxx.version} at {gxx.exe}",
+            )
+            _except = ""
+            _result = True
+        elif gxx.target == "MinGW-x64":
+            _stat = msg_stat(
+                "err",
+                self.name,
+                f"Found GCC compiler program g++ {gxx.version} targeting Windows x64.",
+            )
+            _except = cstring(
+                f"""
+    TheRock not support using MinGW cross compiling from x86-64 Linux to x64 Windows.
+    For Windows builds, please build in Windows OS with Visual Studio environment.
+    You can find Windows build instructions here:
+        https://github.com/ROCm/TheRock/blob/main/docs/development/windows_support.md
+
+        traceback: Invalid crossing build target {gxx.target}""",
+                "err",
+            )
+            _result = None
+        elif gxx.target != "x64":
+            _stat = msg_stat(
+                "err",
+                self.name,
+                f"Found GCC compiler program g++ g++ {gxx.version} targeting {gxx.target}.",
+            )
+            _except = cstring(
+                f"""
+    TheRock not support cross compiling to target {gxx.target}.
+
+        traceback: Invalid crossing build target {gxx.target}""",
+                "err",
+            )
+            _result = None
+        return _stat, _except, _result
 
 
 class CheckGFortran(CheckProgram):
     def __init__(self, required=True):
         super().__init__(required)
         self.program = FindGFortran()
-        self.name = "gfortran"
+        self.name = "GCC/gfortran"
+
+    def check(self):
+        device = SystemInfo()
+        gfort = self.program
+        if gfort.exe is None:
+            _stat = msg_stat(
+                "err", self.name, f"GCC compiler program gfortran not found."
+            )
+            _except = cstring(
+                f"""
+    TheRock needs gfortran compiler.
+
+        traceback: Missing GCC compiler program gfortran.""",
+                "err",
+            )
+            _result = None
+        elif gfort.target == "x64":
+            _stat = msg_stat(
+                "pass",
+                self.name,
+                f"Found GCC compiler program gfortran {gfort.version} at {gfort.exe}",
+            )
+            _except = ""
+            _result = True
+        elif gfort.target == "MinGW-x64" and device.is_windows:
+            _stat = msg_stat(
+                "pass",
+                self.name,
+                f"Found GCC compiler program gfortran {gfort.version} at {gfort.exe}",
+            )
+            _except = ""
+            _result = True
+        elif gfort.target != "x64":
+            _stat = msg_stat(
+                "err",
+                self.name,
+                f"Found GCC compiler program gfortran {gfort.version} targeting {gfort.target}.",
+            )
+            _except = cstring(
+                f"""
+    TheRock not support cross compiling to target {gfort.target}.
+
+        traceback: Invalid crossing build target {gfort.target}""",
+                "err",
+            )
+            _result = None
+        return _stat, _except, _result
 
 
 class CheckGCC_AR(CheckProgram):
     def __init__(self, required=True):
         super().__init__(required)
         self.program = FindGCC_AR()
-        self.name = "Binutils"
+        self.name = "Binutils/Archiver"
+
+    def check(self):
+        device = SystemInfo()
+        ar = self.program
+        if ar.exe is None:
+            _stat = msg_stat("err", self.name, f"GNU/Binutils Archiver not found.")
+            _except = cstring(
+                f"""
+    TheRock needs GNU/Binutils archiver.
+
+        traceback: Missing GNU/Binutils Archiver program ar.""",
+                "err",
+            )
+            _result = None
+
+        elif ar.exe and device.is_windows:
+            _stat = msg_stat(
+                "pass", self.name, f"Found GNU/Binutils Archiver is MinGW."
+            )
+            _except = cstring(
+                f"""
+    TheRock not support using MinGW compiler toolchain on Windows.
+    For Windows builds, please build in Windows OS with Visual Studio environment.
+    You can find Windows build instructions here:
+        https://github.com/ROCm/TheRock/blob/main/docs/development/windows_support.md
+
+        traceback: Invalid GNU/Binutils Archiver""",
+                "err",
+            )
+            _result = True
+        elif ar.exe:
+            _stat = msg_stat(
+                "pass",
+                self.name,
+                f"Found GNU/Binutils Archiver {ar.version} at {ar.exe}",
+            )
+            _except = ""
+            _result = True
+        return _stat, _except, _result
 
 
 class CheckGCC_AS(CheckProgram):
     def __init__(self, required=True):
         super().__init__(required)
         self.program = FindGCC_AS()
-        self.name = "Binutils"
+        self.name = "Binutils/Assembler"
+
+    def check(self):
+        device = SystemInfo()
+        gcc_as = self.program
+        if gcc_as.exe is None:
+            _stat = msg_stat("err", self.name, f"GNU/Binutils Assembler not found.")
+            _except = cstring(
+                f"""
+    TheRock needs GNU/Binutils Assembler.
+
+        traceback: Missing GNU/Binutils Assembler program as.""",
+                "err",
+            )
+            _result = None
+
+        elif gcc_as.exe and device.is_windows:
+            _stat = msg_stat(
+                "pass", self.name, f"Found GNU/Binutils Assembler is MinGW."
+            )
+            _except = cstring(
+                f"""
+    TheRock not support using MinGW compiler toolchain on Windows.
+    For Windows builds, please build in Windows OS with Visual Studio environment.
+    You can find Windows build instructions here:
+        https://github.com/ROCm/TheRock/blob/main/docs/development/windows_support.md
+
+        traceback: Invalid GNU/Binutils Assembler""",
+                "err",
+            )
+            _result = True
+        elif gcc_as.exe:
+            _stat = msg_stat(
+                "pass",
+                self.name,
+                f"Found GNU/Binutils Assembler {gcc_as.version} at {gcc_as.exe}",
+            )
+            _except = ""
+            _result = True
+        return _stat, _except, _result
 
 
 class CheckLD(CheckProgram):
     def __init__(self, required=True):
         super().__init__(required)
         self.program = FindLD()
-        self.name = "Binutils"
+        self.name = "Binutils/Linker"
+
+    def check(self):
+        device = SystemInfo()
+        ld = self.program
+        if ld.exe is None:
+            _stat = msg_stat("err", self.name, f"GNU/Binutils Linker not found.")
+            _except = cstring(
+                f"""
+    TheRock needs GNU/Binutils Linker.
+
+        traceback: Missing GNU/Binutils Linker program ld.""",
+                "err",
+            )
+            _result = None
+
+        elif ld.exe and device.is_windows:
+            _stat = msg_stat("pass", self.name, f"Found GNU/Binutils Linker is MinGW.")
+            _except = cstring(
+                f"""
+    TheRock not support using MinGW compiler toolchain on Windows.
+    For Windows builds, please build in Windows OS with Visual Studio environment.
+    You can find Windows build instructions here:
+        https://github.com/ROCm/TheRock/blob/main/docs/development/windows_support.md
+
+        traceback: Invalid GNU/Binutils Linker""",
+                "err",
+            )
+            _result = True
+        elif ld.exe:
+            _stat = msg_stat(
+                "pass", self.name, f"Found GNU/Binutils Linker {ld.version} at {ld.exe}"
+            )
+            _except = ""
+            _result = True
+        return _stat, _except, _result
 
 
-# MSVC Compiler toolchain
-"""
-MSVC:: cl.exe
-MSVC:: ml64.exe
-MSVC:: lib.exe
-MSVC:: link.exe
-MSVC:: ATL/MFC
-MSVC:: Windows SDK
-"""
+# =====  MSVC Toolchain  =====
 
 
 class CheckMSVC(CheckProgram):
@@ -435,31 +692,35 @@ class CheckMSVC(CheckProgram):
             )
             _result = None
 
-        elif (cl.exe is not None) and (cl.host != "x64"):
+        elif (cl.exe) and (cl.target != "x64"):
+            _stat = msg_stat(
+                "err", self.name, f"Found VC++ compiler targeting {cl.target}."
+            )
+            _except = cstring(
+                f"""
+    TheRock is not supported cross compile to {cl.target}.
+
+        traceback: Unexpected VC++ compile target {cl.target}
+            > {cl.exe}
+    """,
+                "err",
+            )
+            _result = None
+
+        elif (cl.exe) and (cl.host != "x64"):
             _stat = msg_stat("err", self.name, f"Found VC++ compiler unsupported host.")
             _except = cstring(
                 f"""
     TheRock project not support this VC++ host compiler.
 
         traceback: Unexpected VC++ compiler host {cl.host}
+            > {cl.exe}
     """,
                 "err",
             )
             _result = None
 
-        elif (cl.exe is not None) and (cl.target != "x64"):
-            _stat = msg_stat("err", self.name, f"Found VC++ compiler unsupported host.")
-            _except = cstring(
-                f"""
-    TheRock project not support compile to target {cl.target}.
-
-        traceback: Unexpected VC++ compile target {cl.target}
-    """,
-                "err",
-            )
-            _result = None
-
-        elif (cl.exe is not None) and (cl.host == "x64") and (cl.target == "x64"):
+        else:
             _stat = msg_stat("pass", self.name, f"Found MSVC {cl.version} at {cl.exe}")
             _except = ""
             _result = True
@@ -468,6 +729,13 @@ class CheckMSVC(CheckProgram):
 
 
 class CheckML64(CheckProgram):
+    """
+    Checking MSVC's assembler, with these exceptions:
+    - `ml64.exe` but with MSVC targeting wrong archs.
+    - `ml64.exe` not exist but `ml.exe`, this is targeting on x86/ARM 32-bit archs.
+    - Not installed.
+    """
+
     def __init__(self, required=True):
         super().__init__(required)
         self.program = FindML64()
@@ -475,15 +743,50 @@ class CheckML64(CheckProgram):
 
     def check(self):
         ml64 = self.program
+        cl_target = FindMSVC().target
 
-        if ml64.exe is None:
+        if ml64.exe and cl_target != "x64":
+            _stat = msg_stat(
+                "err",
+                self.name,
+                f"Found Microsoft Macro Assembler targeting {cl_target}.",
+            )
+            _except = cstring(
+                f"""
+    We found Microsoft Macro Assembler targeting {cl_target}.
+    TheRock is not supported on targeting {cl_target}.
+
+        traceback: Unexpected VC++ compile target {cl_target}
+            > {ml64.exe}
+    """,
+                "err",
+            )
+            _result = None
+
+        elif (ml64.exe is None) and (shutil.which("ml")):
+            _stat = msg_stat(
+                "err", self.name, f"Found Microsoft Macro Assembler targeting x86."
+            )
+            _except = cstring(
+                f"""
+    We found Microsoft Macro Assembler targeting x86.
+    TheRock is not supported on targeting x86.
+
+        traceback: Unexpected VC++ compile target x86
+            > {shutil.which("ml")}
+    """,
+                "err",
+            )
+            _result = None
+
+        elif ml64.exe is None:
             _stat = msg_stat(
                 "err", self.name, f"Cannot found Microsoft Macro Assembler."
             )
             _except = cstring(
                 f"""
-    We can't found any available Microsoft Macro Assembler on your Windows device.
-    ml64.exe is the Assembler program for native Windows development.
+    We can't found Microsoft Macro Assembler on your Windows device.
+    ml64.exe is the Assembler program targeting for Windows x64.
     Please re-configure your Visual Studio installed C/C++ correctly.
         Visual Studio Installer > C/C++ Development for Desktop:
         - MSVC v14X
@@ -498,7 +801,6 @@ class CheckML64(CheckProgram):
                 "err",
             )
             _result = None
-
         else:
             _stat = msg_stat(
                 "pass",
@@ -515,7 +817,7 @@ class CheckLIB(CheckProgram):
     def __init__(self, required=True):
         super().__init__(required)
         self.program = FindLIB()
-        self.name = "MSVC/Microsoft Linker stub"
+        self.name = "MSVC/Archiver"
 
     def check(self):
         lib = self.program
@@ -523,17 +825,17 @@ class CheckLIB(CheckProgram):
             _stat = msg_stat("err", self.name, f"Cannot found MSVC program lib.exe.")
             _except = cstring(
                 f"""
-    We cannot find MSVC toolchain's archiver.
+    We cannot find lib.exe (Archiver: MSVC Library Manager).
     Please check your Microsoft VC++ installation is correct, or re-check if the install is broken.
 
-        traceback: Missing MSVC required linker compoments
+        traceback: Missing MSVC required linker compoments lib.exe
     """,
                 "err",
             )
             _result = None
         else:
             _stat = msg_stat(
-                "pass", self.name, f"Found MSVC program lib.exe at {lib.exe}"
+                "pass", self.name, f"Found MSVC Library Manager lib.exe at {lib.exe}"
             )
             _except = ""
             _result = True
@@ -545,7 +847,7 @@ class CheckLINK(CheckProgram):
     def __init__(self, required=True):
         super().__init__(required)
         self.program = FindLINK()
-        self.name = "MSVC/Microsoft Linker stub"
+        self.name = "MSVC/Linker"
 
     def check(self):
         link = self.program
@@ -556,7 +858,7 @@ class CheckLINK(CheckProgram):
             )
             _except = cstring(
                 f"""
-    We cannot find MSVC linker link.exe (Microsoft Incremental Linker).
+    We cannot find link.exe (Linker: Microsoft Incremental Linker).
     Please re-check your MSVC installation if it's broken.
 
         traceback: Missing MSVC required linker compoments link.exe
@@ -566,7 +868,9 @@ class CheckLINK(CheckProgram):
             _result = None
         else:
             _stat = msg_stat(
-                "pass", self.name, f"Found Microsoft Incremental Linker at {link.exe}"
+                "pass",
+                self.name,
+                f"Found Microsoft Incremental Linker link.exe at {link.exe}",
             )
             _except = ""
             _result = True
@@ -578,7 +882,7 @@ class CheckRC(CheckProgram):
     def __init__(self, required=True):
         super().__init__(required)
         self.program = FindRC()
-        self.name = "Windows SDK"
+        self.name = "Windows SDK/UCRT"
 
     def check(self):
         rc = self.program
@@ -588,8 +892,9 @@ class CheckRC(CheckProgram):
             )
             _except = cstring(
                 f"""
-    We cannot find rc.exe (Microsoft Resource Compiler) in your Windows SDK, or you have no Windows SDK installed.
-    Please re-configure your MSVC and Windows SDK installation via Visual Studio.
+    We cannot find rc.exe (Microsoft Resource Compiler) in your Windows SDK.
+    This might have Windows SDK not installed, install broken, or vcvarsXXXX.bat not load Windows SDK environment.
+    Please re-configure your MSVC and Windows SDK installation.
         Visual Studio Installer > C/C++ Development for Desktop:
             - MSVC v14X
             - MSVC MFC
@@ -598,6 +903,7 @@ class CheckRC(CheckProgram):
             - CMake for Windows
             - C++ Address Sanitizer
         traceback: Microsoft Resource Compiler not found in Windows SDK or Windows SDK not installed
+            > rc.exe: {rc.exe}
     """,
                 "err",
             )
@@ -694,7 +1000,6 @@ class check_device(ABC):
         return self.check()
 
     def check(self):
-        device = self.device
 
         _stat = _except = _result = None
         return _stat, _except, _result

@@ -51,13 +51,13 @@ class FindProgram(ABC):
         self._minor_version = None
         self._patch_version = None
         self._version = None
-        self.name = None
+        self.name = ""
 
     @property
     def exe(self):
         _exe = shutil.which(self.name)
-        if _exe is not None:
-            return _exe.replace("\\", "/").replace("EXE", "exe")
+        if _exe:
+            return _exe.replace("\\", "/").replace("EXE", "exe").replace("BIN", "bin")
         else:
             return None
 
@@ -113,7 +113,11 @@ class FindPython(FindProgram):
 
     @property
     def exe(self):
-        return sys.executable
+        return (
+            sys.executable.replace("\\", "/")
+            .replace("EXE", "exe")
+            .replace("BIN", "bin")
+        )
 
     def get_version(self):
         self._major_version = sys.version_info.major
@@ -209,36 +213,89 @@ class FindNinja(FindProgram):
 
 
 class FindMSVC(FindProgram):
+    """
+    MSVC have serval properties to check:
+     - `cl.exe` versions.
+     - Host Triple. MSVC toolchain will define host compiler like `Hostx86` or `Hostx64`.
+     - Target Triple. MSVC toolchain targeting machine architectures.
+
+    Same as `FindML64()`.
+    """
+
     def __init__(self):
         super().__init__()
         self.name = "cl"
         self.get_version()
 
     def get_version(self):
-        _vc_ver = os.getenv("VCToolsVersion")
-        if _vc_ver is None:
-            self._version = None
-        else:
-            _vc_ver_split = tuple(int(x) for x in _vc_ver.split("."))
-            if _vc_ver_split >= (14, 30, 00000):
-                self._version = f"v143 ({_vc_ver})"
+        if shutil.which("cl.exe"):
+            _msg = subprocess.run(
+                [self.name],
+                text=True,
+                shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+            ).stdout
+            _match = re.search(
+                r"Version (\d+\.\d+\.\d+) for (\w+)", _msg
+            )  # MSVC v141, v142, v143
+            if _match is None:
+                _match = re.search(
+                    r"Version (\d+\.\d+\.\d+\.\d+) for (\w+)", _msg
+                )  # MSVC v140
+
+            _vc_ver = _match.group(1)
+            _vc_ver_split = tuple(map(int, _vc_ver.split(".")))
+
+            if os.getenv("VisualStudioVersion") == "14.0":
+                _ver14 = f"v140"
+            elif _vc_ver_split >= (14, 30, 00000):
+                _ver14 = f"v143"
             elif _vc_ver_split <= (14, 29, 30133):
-                self._version = f"v142 ({_vc_ver})"
+                _ver14 = f"v142"
             elif _vc_ver_split <= (14, 16, 27023):
-                self._version = f"v141 ({_vc_ver})"
+                _ver14 = f"v141"
+
+            self._version = f"{_vc_ver} ({_ver14})"
+            self._target = _match.group(2)
+
+            if os.getenv("VSCMD_ARG_HOST_ARCH"):
+                self._host = os.getenv(
+                    "VSCMD_ARG_HOST_ARCH"
+                )  # MSVC v141/v142/v143 cases
+            elif (  # MSVC v140 cases
+                self.exe
+                == r"C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/BIN/cl.exe"
+            ):
+                self._host = "x86"
             elif (
                 self.exe
-                == r"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\amd64\cl.exe"
+                == r"C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/BIN/amd64/cl.exe"
             ):
-                self._version = "v140"
+                self._host = "x64"
+            elif (
+                self.exe
+                == r"C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/BIN/arm/cl.exe"
+            ):
+                self._host = "ARM"
+            else:
+                self._host = os.getenv("VSCMD_ARG_HOST_ARCH")
 
-    @property
-    def host(self):
-        return os.getenv("VSCMD_ARG_HOST_ARCH")
+        else:
+            self._version = None
+            self._target = None
 
     @property
     def target(self):
-        return os.getenv("VSCMD_ARG_TGT_ARCH")
+        return self._target
+
+    @property
+    def host(self):
+        return self._host
+
+    @property
+    def version(self):
+        return self._version
 
 
 class FindML64(FindProgram):
@@ -248,22 +305,31 @@ class FindML64(FindProgram):
         self.get_version()
 
     def get_version(self):
-        _vc_ver = os.getenv("VCToolsVersion")
-        if _vc_ver is None:
-            self._version = None
-        else:
-            _vc_ver_split = tuple(int(x) for x in _vc_ver.split("."))
-            if _vc_ver_split >= (14, 30, 00000):
-                self._version = f"v143 ({_vc_ver})"
+        if shutil.which(self.name):
+            _msg = subprocess.run(
+                [self.name],
+                text=True,
+                shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+            ).stdout
+            _match = re.search(r"Version (\d+\.\d+\.\d+)", _msg)
+            _vc_ver = _match.group(1)
+            _vc_ver_split = tuple(map(int, _vc_ver.split(".")))
+
+            if os.getenv("VisualStudioVersion") == "14.0":
+                _ver14 = f"v140"
+            elif _vc_ver_split >= (14, 30, 00000):
+                _ver14 = f"v143"
             elif _vc_ver_split <= (14, 29, 30133):
-                self._version = f"v142 ({_vc_ver})"
+                _ver14 = f"v142"
             elif _vc_ver_split <= (14, 16, 27023):
-                self._version = f"v141 ({_vc_ver})"
-            elif (
-                self.exe
-                == r"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\amd64\ml64.exe"
-            ):
-                self._version = "v140"
+                _ver14 = f"v141"
+
+            self._version = f"{_vc_ver} ({_ver14})"
+
+        else:
+            self._version = None
 
 
 class FindLIB(FindProgram):
@@ -273,22 +339,33 @@ class FindLIB(FindProgram):
         self.get_version()
 
     def get_version(self):
-        _vc_ver = os.getenv("VCToolsVersion")
-        if _vc_ver is None:
-            self._version = None
-        else:
-            _vc_ver_split = tuple(int(x) for x in _vc_ver.split("."))
-            if _vc_ver_split >= (14, 30, 00000):
-                self._version = f"v143 ({_vc_ver})"
+        try:
+            _msg = subprocess.run(
+                [self.name],
+                text=True,
+                shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+            ).stdout
+            _match = re.search(r"Version (\d+\.\d+\.\d+)", _msg)
+            if _match is None:
+                _match = re.search(r"Version (\d+\.\d+\.\d+\.\d+)", _msg)
+
+            _vc_ver = _match.group(1)
+            _vc_ver_split = tuple(map(int, _vc_ver.split(".")))
+
+            if os.getenv("VisualStudioVersion") == "14.0":
+                _ver14 = f"v140"
+            elif _vc_ver_split >= (14, 30, 00000):
+                _ver14 = f"v143"
             elif _vc_ver_split <= (14, 29, 30133):
-                self._version = f"v142 ({_vc_ver})"
+                _ver14 = f"v142"
             elif _vc_ver_split <= (14, 16, 27023):
-                self._version = f"v141 ({_vc_ver})"
-            elif (
-                self.exe
-                == r"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\amd64\lib.exe"
-            ):
-                self._version = "v140"
+                _ver14 = f"v141"
+
+            self._version = f"{_vc_ver} ({_ver14})"
+        except FileNotFoundError:
+            self._version = None
 
 
 class FindLINK(FindProgram):
@@ -298,22 +375,33 @@ class FindLINK(FindProgram):
         self.get_version()
 
     def get_version(self):
-        _vc_ver = os.getenv("VCToolsVersion")
-        if _vc_ver is None:
-            self._version = None
-        else:
-            _vc_ver_split = tuple(int(x) for x in _vc_ver.split("."))
-            if _vc_ver_split >= (14, 30, 00000):
-                self._version = f"v143 ({_vc_ver})"
+        try:
+            _msg = subprocess.run(
+                [self.name],
+                text=True,
+                shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+            ).stdout
+            _match = re.search(r"Version (\d+\.\d+\.\d+)", _msg)
+            if _match is None:
+                _match = re.search(r"Version (\d+\.\d+\.\d+\.\d+)", _msg)
+
+            _vc_ver = _match.group(1)
+            _vc_ver_split = tuple(map(int, _vc_ver.split(".")))
+
+            if os.getenv("VisualStudioVersion") == "14.0":
+                _ver14 = f"v140"
+            elif _vc_ver_split >= (14, 30, 00000):
+                _ver14 = f"v143"
             elif _vc_ver_split <= (14, 29, 30133):
-                self._version = f"v142 ({_vc_ver})"
+                _ver14 = f"v142"
             elif _vc_ver_split <= (14, 16, 27023):
-                self._version = f"v141 ({_vc_ver})"
-            elif (
-                self.exe
-                == r"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\amd64\link.exe"
-            ):
-                self._version = "v140"
+                _ver14 = f"v141"
+
+            self._version = f"{_vc_ver} ({_ver14})"
+        except FileNotFoundError:
+            self._version = None
 
 
 class FindRC(FindProgram):
@@ -335,6 +423,42 @@ class FindGCC(FindProgram):
         self.name = "gcc"
         self.get_version()
 
+    @property
+    def target(self):
+        _target_name = subprocess.run(
+            [self.name, "-dumpmachine"], capture_output=True, text=True, check=True
+        ).stdout.strip()
+        if self.exe is None:
+            _target_name = None
+
+        match _target_name:
+            case "x86_64-linux-gnu":
+                return "x64"
+            case "x86_64-w64-mingw32":
+                return "MinGW-x64"
+            case "i686-w64-mingw32":
+                return "MinGW-x32"
+            case "arm-linux-gnueabi":
+                return "ARM"
+            case "aarch64-linux-gnu":
+                return "ARM64"
+            case "riscv64-linux-gnu":
+                return "RISC-V 64"
+            case "riscv32-linux-gnu":
+                return "RISC-V 32"
+            case "mips64-linux-gnuabi64":
+                return "MIPS64"
+            case "mips-linux-gnu":
+                return "MIPS"
+            case "powerpc64-linux-gnu":
+                return "PowerPC 64"
+            case "powerpc-linux-gnu":
+                return "PowerPC"
+            case "sparc64-linux-gnu":
+                return "SPARC64"
+            case _:
+                return "Unknown"
+
 
 class FindGXX(FindProgram):
     def __init__(self):
@@ -342,12 +466,83 @@ class FindGXX(FindProgram):
         self.name = "g++"
         self.get_version()
 
+    @property
+    def target(self):
+        _target_name = subprocess.run(
+            [self.name, "-dumpmachine"], capture_output=True, text=True, check=True
+        ).stdout.strip()
+        if self.exe is None:
+            _target_name = None
+
+        match _target_name:
+            case "x86_64-linux-gnu":
+                return "x64"
+            case "x86_64-w64-mingw32":
+                return "MinGW-x64"
+            case "i686-w64-mingw32":
+                return "MinGW-x32"
+            case "arm-linux-gnueabi":
+                return "ARM"
+            case "aarch64-linux-gnu":
+                return "ARM64"
+            case "riscv64-linux-gnu":
+                return "RISC-V 64"
+            case "riscv32-linux-gnu":
+                return "RISC-V 32"
+            case "mips64-linux-gnuabi64":
+                return "MIPS64"
+            case "mips-linux-gnu":
+                return "MIPS"
+            case "powerpc64-linux-gnu":
+                return "PowerPC 64"
+            case "powerpc-linux-gnu":
+                return "PowerPC"
+            case "sparc64-linux-gnu":
+                return "SPARC64"
+            case _:
+                return "Unknown"
+
 
 class FindGFortran(FindProgram):
     def __init__(self):
         super().__init__()
         self.name = "gfortran"
         self.get_version()
+
+    @property
+    def target(self):
+        _target_name = subprocess.run(
+            [self.name, "-dumpmachine"], capture_output=True, text=True, check=True
+        ).stdout.strip()
+        if self.exe is None:
+            _target_name = None
+        match _target_name:
+            case "x86_64-linux-gnu":
+                return "x64"
+            case "x86_64-w64-mingw32":
+                return "MinGW-x64"
+            case "i686-w64-mingw32":
+                return "MinGW-x32"
+            case "arm-linux-gnueabi":
+                return "ARM"
+            case "aarch64-linux-gnu":
+                return "ARM64"
+            case "riscv64-linux-gnu":
+                return "RISC-V 64"
+            case "riscv32-linux-gnu":
+                return "RISC-V 32"
+            case "mips64-linux-gnuabi64":
+                return "MIPS64"
+            case "mips-linux-gnu":
+                return "MIPS"
+            case "powerpc64-linux-gnu":
+                return "PowerPC 64"
+            case "powerpc-linux-gnu":
+                return "PowerPC"
+            case "sparc64-linux-gnu":
+                return "SPARC64"
+            case _:
+                return "Unknown"
 
 
 class FindLD(FindProgram):
