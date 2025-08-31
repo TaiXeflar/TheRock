@@ -350,20 +350,20 @@ class FindLIB(FindProgram):
             _match = re.search(r"Version (\d+\.\d+\.\d+)", _msg)
             if _match is None:
                 _match = re.search(r"Version (\d+\.\d+\.\d+\.\d+)", _msg)
+            else:
+                _vc_ver = _match.group(1)
+                _vc_ver_split = tuple(map(int, _vc_ver.split(".")))
 
-            _vc_ver = _match.group(1)
-            _vc_ver_split = tuple(map(int, _vc_ver.split(".")))
+                if os.getenv("VisualStudioVersion") == "14.0":
+                    _ver14 = f"v140"
+                elif _vc_ver_split >= (14, 30, 00000):
+                    _ver14 = f"v143"
+                elif _vc_ver_split <= (14, 29, 30133):
+                    _ver14 = f"v142"
+                elif _vc_ver_split <= (14, 16, 27023):
+                    _ver14 = f"v141"
 
-            if os.getenv("VisualStudioVersion") == "14.0":
-                _ver14 = f"v140"
-            elif _vc_ver_split >= (14, 30, 00000):
-                _ver14 = f"v143"
-            elif _vc_ver_split <= (14, 29, 30133):
-                _ver14 = f"v142"
-            elif _vc_ver_split <= (14, 16, 27023):
-                _ver14 = f"v141"
-
-            self._version = f"{_vc_ver} ({_ver14})"
+                self._version = f"{_vc_ver} ({_ver14})"
         except FileNotFoundError:
             self._version = None
 
@@ -386,20 +386,20 @@ class FindLINK(FindProgram):
             _match = re.search(r"Version (\d+\.\d+\.\d+)", _msg)
             if _match is None:
                 _match = re.search(r"Version (\d+\.\d+\.\d+\.\d+)", _msg)
+            else:
+                _vc_ver = _match.group(1)
+                _vc_ver_split = tuple(map(int, _vc_ver.split(".")))
 
-            _vc_ver = _match.group(1)
-            _vc_ver_split = tuple(map(int, _vc_ver.split(".")))
+                if os.getenv("VisualStudioVersion") == "14.0":
+                    _ver14 = f"v140"
+                elif _vc_ver_split >= (14, 30, 00000):
+                    _ver14 = f"v143"
+                elif _vc_ver_split <= (14, 29, 30133):
+                    _ver14 = f"v142"
+                elif _vc_ver_split <= (14, 16, 27023):
+                    _ver14 = f"v141"
 
-            if os.getenv("VisualStudioVersion") == "14.0":
-                _ver14 = f"v140"
-            elif _vc_ver_split >= (14, 30, 00000):
-                _ver14 = f"v143"
-            elif _vc_ver_split <= (14, 29, 30133):
-                _ver14 = f"v142"
-            elif _vc_ver_split <= (14, 16, 27023):
-                _ver14 = f"v141"
-
-            self._version = f"{_vc_ver} ({_ver14})"
+                self._version = f"{_vc_ver} ({_ver14})"
         except FileNotFoundError:
             self._version = None
 
