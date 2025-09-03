@@ -47,14 +47,11 @@ class Check_List:
     @property
     def summary(self):
         self.run()
-        pass_num = cstring(self.check_record.count(True), color=(55, 255, 125))
-        warn_num = cstring(self.check_record.count(False), color="warn")
-        err_num = cstring(self.check_record.count(None), color="err")
+        self.pass_num = cstring(self.check_record.count(True), color="pass")
+        self.warn_num = cstring(self.check_record.count(False), color="warn")
+        self.err_num = cstring(self.check_record.count(None), color="err")
 
-        print(
-            f"""
-                                Compoments check {pass_num} Passed, {warn_num} Warning, {err_num} Fatal Error"""
-        )
+        return f"""Compoments check {self.pass_num} Passed, {self.warn_num} Warning, {self.err_num} Fatal Error"""
 
 
 # Program Checkers.

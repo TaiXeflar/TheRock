@@ -132,7 +132,7 @@ class RepoInfo:
 
     {cstring("   ◼ ◼ ◼ ◼ ◼ ◼ ◼ ◼ ◼ ◼ ◼","err")}
     {cstring("     ◼ ◼ ◼ ◼ ◼ ◼ ◼ ◼ ◼ ◼","err")}
-    {cstring("       ◼ ◼ ◼ ◼ ◼ ◼ ◼ ◼ ◼","err")}\t  {cstring("AMD TheRock Project","err")}
+    {cstring("       ◼ ◼ ◼ ◼ ◼ ◼ ◼ ◼ ◼","err")}\t  {cstring("AMD ROCm/TheRock Project","err")}
     {cstring("                   ◼ ◼ ◼","err")}
     {cstring("       ◼           ◼ ◼ ◼","err")}\t  Build Environment diagnosis script
     {cstring("     ◼ ◼           ◼ ◼ ◼","err")}

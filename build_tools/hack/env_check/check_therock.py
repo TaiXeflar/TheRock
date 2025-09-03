@@ -1,6 +1,8 @@
 from .check_tools import *
 from .device import SystemInfo
 
+build_project = "ROCm/TheRock"
+
 device = SystemInfo()
 
 if device.is_windows:

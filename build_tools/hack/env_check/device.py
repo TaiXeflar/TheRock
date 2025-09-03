@@ -488,7 +488,7 @@ class SystemInfo:
             return _gpulist
 
         elif self.is_linux:
-            return cstring(f"GPU: \tSkip GPU detection on Linux.", "warn")
+            return cstring(f"[!] Skip GPU detection on Linux.", "warn")
 
     # Define Memory Device status.
     @property
@@ -550,7 +550,7 @@ class SystemInfo:
         if self.is_windows:
             print(
                 f"""
-        ===========    Build Environment Summary    ===========
+        ===================\t\tBuild Environment Summary\t\t===================
 
     OS:         {self.OS_STATUS}
     CPU:        {self.CPU_STATUS}
@@ -569,7 +569,7 @@ class SystemInfo:
         elif self.is_linux:
             print(
                 f"""
-        ===========    Build Environment Summary    ===========
+        ===================\t\tBuild Environment Summary\t\t===================
 
     OS:         {self.OS_STATUS}
     CPU:        {self.CPU_STATUS}
@@ -578,6 +578,3 @@ class SystemInfo:
     STORAGE:    {self.DISK_STATUS}
     """
             )
-
-
-# sys.modules[__name__] = Device

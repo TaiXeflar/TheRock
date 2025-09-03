@@ -1,15 +1,11 @@
 #!/usr/bin/env python
 
 #
-#   Designed by TaiXeflar, reviewed by Scott Todd, contribute to TheRock team
-#
 #   TheRock Project building system pre-build diagnosis script
 #   License follows TheRock project
 #
-#   !  Hint: This script doesn't raise/throw back warnings/errors.
-#   This script is for detecting environments use, We do a global scan on all requirements at once.
-#   We do not want users have to fix its environment one-by-one and get frustrated,so the diagnosis won't throw errors on it.
-#   If running this script have throwback errors, Please report it as new issue or open in a new disscus <3
+#   This script doesn't raise/throw back warnings/errors.
+#   If running this script has errors, please report it as a new issue.
 #
 
 
@@ -27,17 +23,26 @@ def main():
     therock_detect_start = time.perf_counter()
     device = SystemInfo()
     RepoInfo.__logo__()
+    build_type = cstring(check_therock.build_project, "hint")
 
     device.summary
 
-    check_therock.test_list().summary
+    print(
+        f"""
+        ===========\t\tStart detect compoments on: {build_type}\t\t===========
+    """
+    )
+
+    diag_check = check_therock.test_list().summary
 
     therock_detect_terminate = time.perf_counter()
     therock_detect_time = float(therock_detect_terminate - therock_detect_start)
-    therock_detect_runtime = cstring(f"{therock_detect_time:2f}", "hint")
+    therock_detect_runtime = cstring(f"{therock_detect_time:.2f}", "hint")
     print(
         f"""
-        ===========    TheRock build pre-diagnosis script completed in {therock_detect_runtime} seconds    ===========
+        ===========\t    {diag_check}\t===========
+
+        ===========\tTheRock build pre-diagnosis script completed in {therock_detect_runtime} seconds\t===========
     """
     )
 
