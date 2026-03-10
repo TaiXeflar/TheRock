@@ -7,12 +7,13 @@ from find_SDKs import FindSDK
 
 
 _wsl2_err = dedent(
-    f"""Found Linux is WSL2 environment.
-                        TheRock is a project targeting ROCm builds with native Linux/Windows. If you want your Machine is
-                        Windows NT based, please build on Windows native with MSVC instead.
-                        You can have build guides from here: > https://github.com/ROCm/TheRock/blob/main/docs/development/windows_support.md
+    f"""\
+                   Found Linux is WSL2 environment.
+                   TheRock is a project targeting ROCm builds with native Linux/Windows. If you want your Machine is
+                   Windows NT based, please build on Windows native with MSVC instead.
+                   You can have build guides from here: > https://github.com/ROCm/TheRock/blob/main/docs/development/windows_support.md
 
-                        >>> traceback: Found Linux is not native with WSL2 kernel"""
+                    >>> traceback: Found Linux is not native with WSL2 kernel"""
 )
 
 
@@ -83,7 +84,7 @@ class FindLinux(FindSDK):
             "OS_NAME": _LINUX_DISTRO_NAME,
             "OS_VERSION": _LINUX_DISTRO_VERSION,
             "OS_KERNEL": kernel_version,
-            "WSL2": "microsoft-standard-WSL2" in kernel,
+            "WSL2": True if "microsoft-standard-WSL2" in kernel else False,
             "ENDIAN": self._endian_type(),
         }
 
@@ -153,10 +154,11 @@ class FindLinux(FindSDK):
         elif byteOrder != endian or byteOrder not in ["Little Endian", "Big Endian"]:
             result = self._compoment_fail(condition, fail_level)
             reason = dedent(
-                f"""Byte Order examination failed.
+                f"""\
+                            Byte Order examination failed.
                             TheRock required System Byte Order is {endian}, but you have {byteOrder}.
 
-                            >>> traceback: Invalid System Byte Order {byteOrder}"""
+                             >>> traceback: Invalid System Byte Order {byteOrder}"""
             )
 
         message("CHECK", byteOrder, check_result=result)
@@ -190,11 +192,12 @@ class FindLinux(FindSDK):
 
         if result is not SUCCESS:
             reason = dedent(
-                f"""Found your device have no available internet connection.
-                                TheRock building subprojects will need network connection for downloading required source tarballs.
-                                Please re-connect your device back online.
+                f"""\
+                            Found your device have no available internet connection.
+                            TheRock building subprojects will need network connection for downloading required source tarballs.
+                            Please re-connect your device back online.
 
-                                >>> traceback: No internet connection available"""
+                             >>> traceback: No internet connection available"""
             )
             message(result, reason)
 

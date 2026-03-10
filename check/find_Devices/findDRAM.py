@@ -239,13 +239,14 @@ class FindDRAM(FindSDK):
 
         if result is not SUCCESS:
             reason = dedent(
-                f"""Found System have low physical DRAM total volume.
-                                TheRock requires large DRAM volume, which will have large DRAM usage incrementally
-                                during linking time. Small volume of DRAM will make system lag, frozen or crash.
-                                Please consider add DRAM volume over 32GB.
-                                TheRock requires {required} GB system DRAM on your device.
+                f"""\
+                            Found System have low physical DRAM total volume.
+                            TheRock requires large DRAM volume, which will have large DRAM usage incrementally
+                            during linking time. Small volume of DRAM will make system lag, frozen or crash.
+                            Please consider add DRAM volume over 32GB.
+                            TheRock requires {required} GB system DRAM on your device.
 
-                                >>> traceback: Low DRAM volume: {self.MEM_PHYS_TOTAL} GB Total, Required: {required} GB, recommended: {recommend}"""
+                             >>> traceback: Low DRAM volume: {self.MEM_PHYS_TOTAL} GB Total, Required: {required} GB, recommended: {recommend}"""
             )
             message(fail_level, reason)
 
@@ -289,11 +290,12 @@ class FindDRAM(FindSDK):
 
         if result is not SUCCESS:
             reason = dedent(
-                f"""Cannot confirm or Found unexpected DRAM Type.
-                                This pre-build diagnose system has been set to require {memory} Type of DRAM on your device.
-                                Please contact to your related administrator, or contact to TheRock devs for further DRAM support.
+                f"""\
+                            Cannot confirm or Found unexpected DRAM Type.
+                            This pre-build diagnose system has been set to require {memory} Type of DRAM on your device.
+                            Please contact to your related administrator, or contact to TheRock devs for further DRAM support.
 
-                                >>> traceback: Required system need {memory} type DRAM but failed due to incorrect type or confirm not sudo previlage"""
+                             >>> traceback: Required system need {memory} type DRAM but failed due to incorrect type or confirm not sudo previlage"""
             )
             message(result, reason)
 
