@@ -78,37 +78,39 @@ class ManyLinux:
 
     def __repr__(self):
         return f"""
-System configuration:
-    OS:         {self.OS}
-    CPU:        {self.CPU}
-    {self.GPU}
-    RAM:        {self.RAM}
-    Disk:       {self.ROM}
+    System configuration:
+        OS:         {self.OS}
+        CPU:        {self.CPU}
+        {self.GPU}
+        RAM:        {self.RAM}
+        Disk:       {self.ROM}
 
-Software configuration:
-    Python:     {self.Python}
-    Astral uv:  {self.UV}
-    DVC:        {self.DVC}
-    CMake:      {self.CMake}
-    Ninja:      {self.Ninja}
-    CCache:     {self.CCache}
-    SCCache:    {self.SCCache}
-    PkgConfig:  {self.PkgConfig}
+    {self.DiskFileSystem}
 
-    gcc:        {self.gcc}
-    g++:        {self.gxx}
-    gfortran:   {self.gfortran}
-    gcc-ar:     {self.gcc_ar}
-    ar:         {self.bin_ar}
-    as:         {self.bin_as}
-    ld:         {self.ld}
-    glibc:      {self.glibc}
+    Software configuration:
+        Python:     {self.Python}
+        Astral uv:  {self.UV}
+        DVC:        {self.DVC}
+        CMake:      {self.CMake}
+        Ninja:      {self.Ninja}
+        CCache:     {self.CCache}
+        SCCache:    {self.SCCache}
+        PkgConfig:  {self.PkgConfig}
 
-    {self.CCache.stats}
-    {self.SCCache.stats}
-        {self.llvm.__stat__()}
-    {self.ROCm.stats}
-                        """
+        gcc:        {self.gcc}
+        g++:        {self.gxx}
+        gfortran:   {self.gfortran}
+        gcc-ar:     {self.gcc_ar}
+        ar:         {self.bin_ar}
+        as:         {self.bin_as}
+        ld:         {self.ld}
+        glibc:      {self.glibc}
+
+        {self.CCache.stats}
+        {self.SCCache.stats}
+            {self.llvm.__stat__()}
+        {self.ROCm.stats}
+                            """
 
     def __info__(self):
         return {
@@ -165,6 +167,10 @@ Software configuration:
     @property
     def ROM(self) -> FindDisk:
         return self.info["ssd"]
+
+    @property
+    def DiskFileSystem(self):
+        return self.info["df"]
 
     @property
     def Python(self) -> FindPython:
