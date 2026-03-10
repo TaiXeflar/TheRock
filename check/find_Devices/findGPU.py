@@ -243,27 +243,6 @@ class FindGPU(FindSDK):
                 vram_unit_round=2,
             )
 
-        gpu_reg_dict["GPU2"] = GPUDevice(
-            "GPU2",
-            "AMD Radeon RX 7900 XTX",
-            "dGPU",
-            vram_byte=25769803776,
-            vram_unit="GB",
-        )
-        gpu_reg_dict["GPU3"] = GPUDevice(
-            "GPU3", "AMD Strix Halo", "APU", vram_byte=77309411328, vram_unit="GB"
-        )
-        gpu_reg_dict["GPU4"] = GPUDevice(
-            "GPU4",
-            "AMD Radeon RX 7800 XT",
-            "dGPU",
-            vram_byte=17179869184,
-            vram_unit="GB",
-        )
-        gpu_reg_dict["GPU5"] = GPUDevice(
-            "GPU5", "Intel Iris Xe Graphics", "iGPU", vram_byte=None
-        )
-
         return gpu_reg_dict
 
     def __LINUX__(self):
