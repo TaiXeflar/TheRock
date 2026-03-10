@@ -1,24 +1,23 @@
-
-
 from typing import Literal
 
 from .status import *
 
 import platform, os
 
+
 def os_type() -> Literal["Windows", "Linux", "BSD", "macOS"]:
-    
+
     name: str = platform.system()
 
-    if name == "Windows": 
+    if name == "Windows":
         sysname = name
-    elif name == "Linux": 
+    elif name == "Linux":
         sysname = name
-    elif name == "Darwin": 
+    elif name == "Darwin":
         sysname = "macOS"
-    elif "BSD" in name:   
+    elif "BSD" in name:
         sysname = "BSD"
-    else: 
+    else:
         sysname = name
 
     return sysname
@@ -26,7 +25,8 @@ def os_type() -> Literal["Windows", "Linux", "BSD", "macOS"]:
 
 environ_dict = dict(os.environ)
 
-def ENV(var:str=None):
+
+def ENV(var: str = None):
     """
     Return env variable with defined value or NOTDEFINED.
     """
@@ -40,6 +40,7 @@ def ENV(var:str=None):
     return val if val is not None else NOTDEFINED
 
 
-def where(exe:str, /):
+def where(exe: str, /):
     from shutil import which
+
     return which(exe)

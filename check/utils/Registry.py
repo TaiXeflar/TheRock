@@ -1,6 +1,3 @@
-
-
-
 from typing import overload, Literal, List, Optional, Union, Any
 
 from utils.status import NOTDEFINED
@@ -12,23 +9,28 @@ if os_type() == "Windows":
 
 
 @overload
-def regedit(root_key: Literal["HKLM", "HKCU"],
-            path: str,
-            /,
-            *,
-            key_name: str) -> str: ...
+def regedit(
+    root_key: Literal["HKLM", "HKCU"], path: str, /, *, key_name: str
+) -> str: ...
+
 
 @overload
-def regedit(root_key: Literal["HKLM", "HKCU"],
-            path: str,
-            /,) -> List[str]: ...
+def regedit(
+    root_key: Literal["HKLM", "HKCU"],
+    path: str,
+    /,
+) -> List[str]: ...
 
-def regedit(root_key: Literal["HKLM", "HKCU"] = "HKLM",
-            path: str = "",
-            /,
-            *,
-            key_name: Optional[str] = None, # 預設改為 None 以觸發 List 模式，或保留 "" 為 Default Value
-            ) -> Union[str, List[str], Any]: # Any for NOTDEFINED
+
+def regedit(
+    root_key: Literal["HKLM", "HKCU"] = "HKLM",
+    path: str = "",
+    /,
+    *,
+    key_name: Optional[
+        str
+    ] = None,  # 預設改為 None 以觸發 List 模式，或保留 "" 為 Default Value
+) -> Union[str, List[str], Any]:  # Any for NOTDEFINED
     """
     ## Get-Regedit (Enhanced)
     - 若指定 `key_name` (str): 回傳該數值 (Value)。
@@ -45,21 +47,18 @@ def regedit(root_key: Literal["HKLM", "HKCU"] = "HKLM",
 
     try:
         with winreg.OpenKey(_root, path) as hkey:
-            
+
             # --- 分歧點：讀取數值 vs 列舉機碼 ---
-            
+
             if key_name is not None:
                 # 模式 A: 讀取數值 (Original)
                 value, _ = winreg.QueryValueEx(hkey, key_name)
                 return str(value)
-            
+
             else:
                 # 模式 B: 列舉子機碼 (List Subkeys)
                 num_subkeys, _, _ = winreg.QueryInfoKey(hkey)
-                subkeys_list = [
-                    winreg.EnumKey(hkey, i) 
-                    for i in range(num_subkeys)
-                ]
+                subkeys_list = [winreg.EnumKey(hkey, i) for i in range(num_subkeys)]
                 return subkeys_list
 
     except (FileNotFoundError, OSError) as e:

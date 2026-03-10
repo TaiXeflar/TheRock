@@ -1,6 +1,6 @@
+from .linux import ManyLinux
+from .windows import WindowsNT
 
-from .linux     import ManyLinux
-from .windows   import WindowsNT
 # from .bsd       import BSD
 
 __all__ = [

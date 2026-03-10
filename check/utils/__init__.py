@@ -1,5 +1,3 @@
-
-
 from .compare_functions import (
     VERSION,
     VERSION_IN_RANGE,
@@ -14,9 +12,7 @@ from .compare_functions import (
 
 from .color_string import cstring, message
 
-from .system_function import (
-    ENV, os_type, where
-)
+from .system_function import ENV, os_type, where
 
 from .Registry import regedit
 
@@ -31,14 +27,7 @@ from .utility_functions import (
     COMMAND_LINE,
 )
 
-from .status import (NOTFOUND,
-                     NOTDEFINED,
-                     SUCCESS,
-                     HINT,
-                     FAILED,
-                     FATAL,
-                     WARNING
-    )
+from .status import NOTFOUND, NOTDEFINED, SUCCESS, HINT, FAILED, FATAL, WARNING
 
 from time import sleep as wait
 
@@ -54,28 +43,26 @@ __all__ = [
     "STREQUAL",
     "STRMATCH",
     "EXISTS",
-
-
-    "cstring", "message",
+    "cstring",
+    "message",
     "cmake_variable_finder",
-
-    "ENV", "regedit", "os_type",
-
+    "ENV",
+    "regedit",
+    "os_type",
     "tic_toc",
     "githead",
     "gitrepo",
-    "logo", "clear",
+    "logo",
+    "clear",
     "COMMAND_LINE",
-
-    'NOTFOUND',
-    'NOTDEFINED',
-    'SUCCESS',
-    'HINT',
-    'FAILED',
-    'FATAL',
-    'WARNING',
-
-    'wait', 'where',
-
-    "config"
+    "NOTFOUND",
+    "NOTDEFINED",
+    "SUCCESS",
+    "HINT",
+    "FAILED",
+    "FATAL",
+    "WARNING",
+    "wait",
+    "where",
+    "config",
 ]

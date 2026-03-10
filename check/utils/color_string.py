@@ -16,6 +16,7 @@ from .status import HINT, WARNING, FATAL
 if TYPE_CHECKING:
     from .status import _SuccessType, _HintType, _WarningType, _FatalType
 
+
 # ... (ColorString class 定義保持不變) ...
 class ColorString:
     def __init__(self, text: str, rgb: Optional[tuple[int, int, int]] = None) -> None:
@@ -36,18 +37,20 @@ class ColorString:
 
     def __add__(self, other: Any) -> str:
         return str(self) + str(other)
-        
+
     def __radd__(self, other: Any) -> str:
         return str(other) + str(self)
 
+
 _NAMED_COLORS = {
-    "ERROR":  (255, 61, 61),
+    "ERROR": (255, 61, 61),
     "WARNING": (184, 166, 48),
     "SUCCESS": (6, 171, 80),
-    "HINT": (115, 201, 201)
+    "HINT": (115, 201, 201),
 }
 
 _HEX_RE = re.compile(r"^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$")
+
 
 def _parse_color(v: Any) -> tuple[int, int, int]:
     """
@@ -63,12 +66,14 @@ def _parse_color(v: Any) -> tuple[int, int, int]:
         s = v.strip()
         # 先比對 Key (Case-insensitive 處理建議統一，這裡維持原樣)
         # 假設你的 key 都是全大寫，若輸入有小寫需求可 s.upper()
-        s_upper = s.upper() 
-        if s_upper in _NAMED_COLORS: return _NAMED_COLORS[s_upper]
-        
+        s_upper = s.upper()
+        if s_upper in _NAMED_COLORS:
+            return _NAMED_COLORS[s_upper]
+
         if _HEX_RE.match(s):
             s = s.lstrip("#")
-            if len(s) == 3: s = "".join(c * 2 for c in s)
+            if len(s) == 3:
+                s = "".join(c * 2 for c in s)
             return (int(s[0:2], 16), int(s[2:4], 16), int(s[4:6], 16))
 
     # 2. Iterable (Tuple/List) 處理
@@ -104,24 +109,38 @@ def _parse_color(v: Any) -> tuple[int, int, int]:
 # 這裡可以使用上面 TYPE_CHECKING 引入的型別，IDE 會懂，Runtime 不會爆。
 # =========================================================================
 @overload
-def cstring(text: Union[str, ColorString], color: Literal["SUCCESS", "WARNING", "ERROR", "HINT"], /) -> ColorString: ...
+def cstring(
+    text: Union[str, ColorString],
+    color: Literal["SUCCESS", "WARNING", "ERROR", "HINT"],
+    /,
+) -> ColorString: ...
+
 
 @overload
-def cstring(text: Union[str, ColorString], color: Union[Iterable[int], str], /) -> ColorString: ...
+def cstring(
+    text: Union[str, ColorString], color: Union[Iterable[int], str], /
+) -> ColorString: ...
+
 
 @overload
-def cstring(text: Union[str, ColorString], color: Union[_SuccessType, _HintType, _WarningType, _FatalType], /) -> ColorString: ...
+def cstring(
+    text: Union[str, ColorString],
+    color: Union[_SuccessType, _HintType, _WarningType, _FatalType],
+    /,
+) -> ColorString: ...
+
 
 @overload
 def cstring(text: Union[str, ColorString], color: None = None, /) -> str: ...
 
+
 def cstring(text: Any, color: Any = None, /) -> Union[ColorString, str]:
 
-    raw_text = text.content if hasattr(text, 'content') else str(text)
-    
+    raw_text = text.content if hasattr(text, "content") else str(text)
+
     if color is None:
         return raw_text
-    
+
     try:
         rgb = _parse_color(color)
         return ColorString(raw_text, rgb)
@@ -131,32 +150,53 @@ def cstring(text: Any, color: Any = None, /) -> Union[ColorString, str]:
 
 
 @overload
-def message(text:str, /) -> None: ...
+def message(text: str, /) -> None: ...
 @overload
-def message(mode:Literal["NOTICE"], /, text:str) -> None: ...
+def message(mode: Literal["NOTICE"], /, text: str) -> None: ...
 @overload
-def message(mode:Literal["STATUS"], /, text:str, latency:float=0.05) -> None: ...
+def message(mode: Literal["STATUS"], /, text: str, latency: float = 0.05) -> None: ...
 @overload
-def message(mode:Literal["CHECK"],  /, text:str, check_result: Union[_HintType, _WarningType, _FatalType], latency:float=0.05) -> None: ...
+def message(
+    mode: Literal["CHECK"],
+    /,
+    text: str,
+    check_result: Union[_HintType, _WarningType, _FatalType],
+    latency: float = 0.05,
+) -> None: ...
 @overload
-def message(mode:Literal["REPRINT"], /, text:str) -> None: ...
+def message(mode: Literal["REPRINT"], /, text: str) -> None: ...
 @overload
-def message(mode:Literal["HINT", "WARNING", "ERROR"], /, text:str) -> None: ...
+def message(mode: Literal["HINT", "WARNING", "ERROR"], /, text: str) -> None: ...
 @overload
-def message(mode:Union[_HintType, _WarningType, _FatalType], /, text:str) -> None: ...
+def message(mode: Union[_HintType, _WarningType, _FatalType], /, text: str) -> None: ...
 @overload
-def message(mode:Literal["DEPRECATED"], /, text:str) -> None: ...
+def message(mode: Literal["DEPRECATED"], /, text: str) -> None: ...
 @overload
-def message(mode:Literal["FATAL_ERROR"], /, text:str) -> None: ...
+def message(mode: Literal["FATAL_ERROR"], /, text: str) -> None: ...
 
-def message(mode:Union[Literal["NOTICE", "REPRINT", "STATUS", "CHECK", "HINT", "WARNING", "ERROR", "DEPRECATED", "FATAL_ERROR"], 
-                       str, 
-                       Union[_HintType, _WarningType, _FatalType]],
-            text:str=None,
-            latency:float=0.05,
-            *,
-            check_result:Union[_HintType, _WarningType, _FatalType]=None) -> None:
-    
+
+def message(
+    mode: Union[
+        Literal[
+            "NOTICE",
+            "REPRINT",
+            "STATUS",
+            "CHECK",
+            "HINT",
+            "WARNING",
+            "ERROR",
+            "DEPRECATED",
+            "FATAL_ERROR",
+        ],
+        str,
+        Union[_HintType, _WarningType, _FatalType],
+    ],
+    text: str = None,
+    latency: float = 0.05,
+    *,
+    check_result: Union[_HintType, _WarningType, _FatalType] = None,
+) -> None:
+
     if text is None:
         text = mode
         mode = "NOTICE"

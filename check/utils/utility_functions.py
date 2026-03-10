@@ -1,6 +1,3 @@
-
-
-
 import time
 from functools import wraps
 from typing import Union, Literal
@@ -8,9 +5,10 @@ import subprocess as subproc
 from .status import *
 from pathlib import Path
 from .system_function import os_type
-from utils import config 
+from utils import config
 
 from .color_string import cstring
+
 
 #   =======================================================================================================================================================================================
 #       clear function for clear terminal.
@@ -34,7 +32,6 @@ def clear():
 #
 
 
-
 def tic_toc():
     def decorator(func):
         @wraps(func)
@@ -44,9 +41,13 @@ def tic_toc():
             result = func(*args, **kwargs)
 
             toc = time.perf_counter()
-            print(f"\n        ===========\t\tTheRock diagnose system progress finished in {(toc - tic):.6f} seconds \t\t===========\n")
+            print(
+                f"\n        ===========\t\tTheRock diagnose system progress finished in {(toc - tic):.6f} seconds \t\t===========\n"
+            )
             return result
+
         return wrapper
+
     return decorator
 
 
@@ -56,47 +57,56 @@ def tic_toc():
 
 
 def git_head():
-    _head = subproc.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True).stdout.strip()
+    _head = subproc.run(
+        ["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True
+    ).stdout.strip()
     return _head
+
 
 githead = git_head()
 
+
 def git_repo():
-    finder = subproc.run(["git", "rev-parse", "--show-toplevel"], capture_output=True, text=True).stdout.strip()
+    finder = subproc.run(
+        ["git", "rev-parse", "--show-toplevel"], capture_output=True, text=True
+    ).stdout.strip()
     return Path(finder).resolve()
+
 
 gitrepo = git_repo()
 
+
 def therock_ver():
     import json
-    with open( (gitrepo / "version.json"), "r", encoding="utf-8") as f:
-        content:dict[
-            Literal["rocm-version"], str
-        ] = json.loads(f.read())
+
+    with open((gitrepo / "version.json"), "r", encoding="utf-8") as f:
+        content: dict[Literal["rocm-version"], str] = json.loads(f.read())
 
     return content["rocm-version"]
+
 
 def cmd_record() -> str:
     import sys
     import os
+
     args = sys.argv
     python_alias = os.path.basename(sys.executable)
 
     return f"{python_alias} {' '.join(args)}"
 
-COMMAND_LINE = cmd_record().replace("\\", "/")
-    
 
+COMMAND_LINE = cmd_record().replace("\\", "/")
 
 
 #   =======================================================================================================================================================================================
 #       AMD logo.
 #
 
+
 def logo():
-        """"""
-        print(
-            f"""
+    """"""
+    print(
+        f"""
 
 
     {cstring("\t\t\t    # # # # # # # # # # #","ERROR")}
@@ -112,4 +122,4 @@ def logo():
 
 
     """
-        )
+    )

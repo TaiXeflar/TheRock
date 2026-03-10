@@ -1,5 +1,3 @@
-
-
 from typing import Literal, get_args, TypedDict, Union
 from pathlib import Path
 
@@ -99,14 +97,16 @@ AMD_LLVM_CONFIGURE_TYPEHINT = Literal[
     "LLVM ldflags",
 ]
 
-AMD_LLVM_TOOLS: list[AMD_LLVM_COMPOMENTS_TYPEHINT] = list(get_args(AMD_LLVM_COMPOMENTS_TYPEHINT))
+AMD_LLVM_TOOLS: list[AMD_LLVM_COMPOMENTS_TYPEHINT] = list(
+    get_args(AMD_LLVM_COMPOMENTS_TYPEHINT)
+)
 
 LLVM_DIST_TYPEHINT = Literal["AMD-LLVM", "HIP_SDK", "AOCC", "VS20XX", "3rd-Party"]
 
 
 LLVMConfigDict = dict[AMD_LLVM_CONFIGURE_TYPEHINT, Union[str, Path]]
 LLVMToolsDict = dict[AMD_LLVM_COMPOMENTS_TYPEHINT, Union[str, Path]]
-AMDLLVM_TYPEHINT = TypedDict("MyDictType", {
-    "LLVM Configuration": LLVMConfigDict,
-    "LLVM Toolchain": LLVMToolsDict
-})
+AMDLLVM_TYPEHINT = TypedDict(
+    "MyDictType",
+    {"LLVM Configuration": LLVMConfigDict, "LLVM Toolchain": LLVMToolsDict},
+)

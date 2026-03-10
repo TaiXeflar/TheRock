@@ -1,5 +1,3 @@
-
-
 from typing import Literal
 
 VISUAL_STUDIO_20XX_INFO_PROPERTY = Literal[
