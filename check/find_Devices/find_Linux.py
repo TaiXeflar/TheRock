@@ -84,7 +84,7 @@ class FindLinux(FindSDK):
             "OS_NAME": _LINUX_DISTRO_NAME,
             "OS_VERSION": _LINUX_DISTRO_VERSION,
             "OS_KERNEL": kernel_version,
-            "WSL2": True if "microsoft-standard-WSL2" in kernel else False,
+            "WSL2": "Yes" if "microsoft-standard-WSL2" in kernel else "No",
             "ENDIAN": self._endian_type(),
         }
 
