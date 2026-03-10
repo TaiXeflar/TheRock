@@ -75,7 +75,8 @@ class FindAMDLLVM(FindSDK):
         llvm-inc-dir:         {llvm_config["LLVM Include Dir"].as_posix()}
         llvm-lib-dir:         {llvm_config["LLVM Library Dir"].as_posix()}
         llvm-cmake-dir:       {llvm_config["LLVM CMake dir"].as_posix()}
-        llvm-ld-library-dir:  {llvm_config["LLVM LD Library Dir"].as_posix()}"""
+        llvm-ld-library-dir:  {llvm_config["LLVM LD Library Dir"].as_posix()}
+"""
 
         for flags in ("LLVM cflags", "LLVM cxxflags", "LLVM cppflags", "LLVM ldflags"):
             llvm_flags = llvm_config.get(flags, "")
