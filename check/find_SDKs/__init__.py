@@ -1,5 +1,6 @@
 from .refs import *
 
+from .refs._findSDK import FindSDK
 from .findPython import FindPython
 from .findPyvenv import FindUV, FindConda
 from .findVS20XX import FindVS20XX
