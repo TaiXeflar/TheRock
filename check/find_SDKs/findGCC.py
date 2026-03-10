@@ -157,24 +157,26 @@ class FindGCC(FindSDK):
             message("CHECK", self.Version, check_result=result)
             if result is not SUCCESS:
                 reason = dedent(
-                    f"""TheRock found `gcc` program with invalid version: {self.Version}.
-                                    TheRock build pre-diagnose system have set the version rules '{version_require}' with parameters:
-                                    > version conpare:    {version} {op} {self.Version} {op2} {version_max}
-                                    > blacklist     {blacklist}, fuzzy = {fuzzy}
+                    f"""\
+                                TheRock found `gcc` program with invalid version: {self.Version}.
+                                TheRock build pre-diagnose system have set the version rules '{version_require}' with parameters:
+                                 > version conpare:    {version} {op} {self.Version} {op2} {version_max}
+                                 > blacklist     {blacklist}, fuzzy = {fuzzy}
 
-                                    Please contact to ROCm/TheRock Devs for further information with your version.
+                                Please contact to ROCm/TheRock Devs for further information with your version.
 
-                                    >>> traceback: Found GCC compiler program 'gcc' with invalid version {self.Version}"""
+                                 >>> traceback: Found GCC compiler program 'gcc' with invalid version {self.Version}"""
                 )
 
         else:
             result = self._compoment_fail(condition, fail_level)
             message("CHECK", NOTFOUND, check_result=result)
             reason = dedent(
-                f"""TheRock cannot find a GCC compiler C language frontend `gcc`.
-                                TheRock requires gcc to compile ROCm AMD-LLVM. Please install it via package managers.
+                f"""\
+                            TheRock cannot find a GCC compiler C language frontend `gcc`.
+                            TheRock requires gcc to compile ROCm AMD-LLVM. Please install it via package managers.
 
-                                >>> traceback: GCC compiler missing C language frontend `gcc` program"""
+                             >>> traceback: GCC compiler missing C language frontend `gcc` program"""
             )
 
         if result is not SUCCESS:
@@ -200,11 +202,12 @@ class FindGCC(FindSDK):
 
         if result is not SUCCESS:
             reason = dedent(
-                f"""Found Invalid GCC target triple `{self.target}`.
-                                TheRock only avail target on x64 target: "AMD64", "x64", "EMT64/Intel 64", "x86_64".
-                                Please contact to TheRock dev team for '{self.target}' target development.
+                f"""\
+                            Found Invalid GCC target triple `{self.target}`.
+                            TheRock only avail target on x64 target: "AMD64", "x64", "EMT64/Intel 64", "x86_64".
+                            Please contact to TheRock dev team for '{self.target}' target development.
 
-                                >>> traceback: Found unsupported gcc target triple `{self.target}`"""
+                             >>> traceback: Found unsupported gcc target triple `{self.target}`"""
             )
             message(result, reason)
         return result
@@ -298,9 +301,10 @@ class FindGXX(FindSDK):
             if version_require == "IN_RANGE":
                 if op not in ("<", "<=") or op2 is None:
                     err_msg = dedent(
-                        f"""Illegal comnpare operator usage.
-                                        Expected In Range compare with: {version} </<= {self.Version} </<= {version_max}    --> VERSION_IN_RANGE(...)
-                                        Your Entry:                     {version} {op} {self.Version} {op2} {version_max}   """
+                        f"""\
+                                     Illegal comnpare operator usage.
+                                     Expected In Range compare with: {version} </<= {self.Version} </<= {version_max}    --> VERSION_IN_RANGE(...)
+                                     Your Entry:                     {version} {op} {self.Version} {op2} {version_max}   """
                     )
                     message("FATAL_ERROR", err_msg)
 
@@ -319,32 +323,32 @@ class FindGXX(FindSDK):
                 )
             else:
                 message(
-                    "FATAL_ERROR",
-                    f"Invalid g++ version exam mode {version_require}.",
-                    ValueError,
+                    "FATAL_ERROR", f"Invalid g++ version exam mode {version_require}."
                 )
 
             result = SUCCESS if check else self._compoment_fail(condition, fail_level)
 
             if result is not SUCCESS:
                 reason = dedent(
-                    f"""TheRock found `g++` program with invalid version: {self.Version}.
-                                    TheRock build pre-diagnose system have set the version rules '{version_require}' with parameters:
-                                    > version conpare:    {version} {op} {self.Version} {op2} {version_max}
-                                    > blacklist     {blacklist}, fuzzy = {fuzzy}
+                    f"""\
+                                TheRock found `g++` program with invalid version: {self.Version}.
+                                TheRock build pre-diagnose system have set the version rules '{version_require}' with parameters:
+                                 > version conpare:    {version} {op} {self.Version} {op2} {version_max}
+                                 > blacklist     {blacklist}, fuzzy = {fuzzy}
 
-                                    Please contact to ROCm/TheRock Devs for further information with your version.
+                                Please contact to ROCm/TheRock Devs for further information with your version.
 
-                                    >>> traceback: Found GCC compiler program 'gcc' with invalid version {self.Version}"""
+                                 >>> traceback: Found GCC compiler program 'gcc' with invalid version {self.Version}"""
                 )
 
         else:
             result = self._compoment_fail(condition, fail_level)
             reason = dedent(
-                f"""TheRock cannot find a GCC compiler C++ language frontend `g++`.
-                                TheRock requires g++ to compile ROCm AMD-LLVM. Please install it via package managers.
+                f"""\
+                            TheRock cannot find a GCC compiler C++ language frontend `g++`.
+                            TheRock requires g++ to compile ROCm AMD-LLVM. Please install it via package managers.
 
-                                >>> traceback: GCC compiler missing C++ language frontend `g++` program"""
+                             >>> traceback: GCC compiler missing C++ language frontend `g++` program"""
             )
 
         message("CHECK", self.Version, check_result=result)
@@ -370,11 +374,12 @@ class FindGXX(FindSDK):
 
         if result is not SUCCESS:
             reason = dedent(
-                f"""Found Invalid g++ target triple `{self.target}`.
-                                TheRock only avail target on x64 target: "AMD64", "x64", "EMT64/Intel 64", "x86_64".
-                                Please contact to TheRock dev team for '{self.target}' target development.
+                f"""\
+                            Found Invalid g++ target triple `{self.target}`.
+                            TheRock only avail target on x64 target: "AMD64", "x64", "EMT64/Intel 64", "x86_64".
+                            Please contact to TheRock dev team for '{self.target}' target development.
 
-                                >>> traceback: Found unsupported g++ target triple `{self.target}`"""
+                             >>> traceback: Found unsupported g++ target triple `{self.target}`"""
             )
             message(result, reason)
         return result
@@ -466,9 +471,10 @@ class FindGFortran(FindSDK):
             elif version_require == "IN_RANGE":
                 if op not in ("<", "<=") or op2 is None:
                     err_msg = dedent(
-                        f"""Illegal comnpare operator usage.
-                                        Expected In Range compare with: {version} </<= {self.Version} </<= {version_max}    --> VERSION_IN_RANGE(...)
-                                        Your Entry:                     {version} {op} {self.Version} {op2} {version_max}   """
+                        f"""\
+                                     Illegal comnpare operator usage.
+                                     Expected In Range compare with: {version} </<= {self.Version} </<= {version_max}    --> VERSION_IN_RANGE(...)
+                                     Your Entry:                     {version} {op} {self.Version} {op2} {version_max}   """
                     )
                     message("FATAL_ERROR", err_msg)
 
@@ -495,25 +501,27 @@ class FindGFortran(FindSDK):
 
             if result is not SUCCESS:
                 reason = dedent(
-                    f""" TheRock found `gfortran` program with invalid version: {self.Version}.
-                                    TheRock build pre-diagnose system have set the version rules '{version_require}' with parameters:
-                                    > version conpare:    {version} {op} {self.Version} {op2} {version_max}
-                                    > blacklist     {blacklist}, fuzzy = {fuzzy}
+                    f"""\
+                                TheRock found `gfortran` program with invalid version: {self.Version}.
+                                TheRock build pre-diagnose system have set the version rules '{version_require}' with parameters:
+                                 > version conpare:    {version} {op} {self.Version} {op2} {version_max}
+                                 > blacklist     {blacklist}, fuzzy = {fuzzy}
 
-                                    Please contact to ROCm/TheRock Devs for further information with your version.
+                                Please contact to ROCm/TheRock Devs for further information with your version.
 
-                                    >>> traceback: Found GCC compiler program 'gcc' with invalid version {self.Version}"""
+                                 >>> traceback: Found GCC compiler program 'gcc' with invalid version {self.Version}"""
                 )
         else:
             result = FATAL
             reason = dedent(
-                f"""TheRock cannot find a GCC compiler Fortran language frontend `gfortran`.
-                                TheRock requires gfortran to compile ROCm libraries.
-                                - Windows:    Please install via Strawberry/MinGW-w64.
-                                - Linux:      Please install it via package managers.
+                f"""\
+                            TheRock cannot find a GCC compiler Fortran language frontend `gfortran`.
+                            TheRock requires gfortran to compile ROCm libraries.
+                             - Windows:    Please install via Strawberry/MinGW-w64.
+                             - Linux:      Please install it via package managers.
 
-                                >>> traceback: GCC compiler missing Fortran language frontend `gfortran` program
-                                """
+                             >>> traceback: GCC compiler missing Fortran language frontend `gfortran` program
+                            """
             )
 
         message("CHECK", self.Version, check_result=result)
@@ -537,11 +545,12 @@ class FindGFortran(FindSDK):
         else:
             result = self._compoment_fail(condition, fail_level)
             reason = dedent(
-                f"""Found Invalid gfortran target triple `{self.target}`.
-                                TheRock only avail target on x64 target: "AMD64", "x64", "EMT64/Intel 64", "x86_64".
-                                Please contact to TheRock dev team for '{self.target}' target development.
+                f"""\
+                            Found Invalid gfortran target triple `{self.target}`.
+                            TheRock only avail target on x64 target: "AMD64", "x64", "EMT64/Intel 64", "x86_64".
+                            Please contact to TheRock dev team for '{self.target}' target development.
 
-                                >>> traceback: Found unsupported gfortran target triple `{self.target}`"""
+                             >>> traceback: Found unsupported gfortran target triple `{self.target}`"""
             )
 
         message("CHECK", self.target, check_result=result)
@@ -598,11 +607,12 @@ class FindGCC_AR(FindSDK):
 
         if result is not SUCCESS:
             reason = dedent(
-                f"""Failed to find GCC compiler program gcc-ar.
-                                If TheRock enables Linking-Time-Optimization flag `-flto`, we needs gcc-ar program.
-                                But we seems gcc-ar is not found. Please check your GCC toolchain installation.
+                f"""\
+                            Failed to find GCC compiler program gcc-ar.
+                            If TheRock enables Linking-Time-Optimization flag `-flto`, we needs gcc-ar program.
+                            But we seems gcc-ar is not found. Please check your GCC toolchain installation.
 
-                                >>> traceback: GCC compiler program gcc-ar is missing"""
+                             >>> traceback: GCC compiler program gcc-ar is missing"""
             )
             message(result, reason)
 
@@ -663,10 +673,10 @@ class FindGLIBC(FindSDK):
             if version_require == "IN_RANGE":
                 if op not in ("<", "<=") or op2 is None:
                     err_msg = dedent(
-                        f"""Illegal comnpare operator usage.
-                                        Expected In Range compare with: {version} </<= {self.Version} </<= {version_max}    --> VERSION_IN_RANGE(...)
-                                        Your Entry:                     {version} {op} {self.Version} {op2} {version_max}   """,
-                        ValueError,
+                        f"""\
+                                     Illegal comnpare operator usage.
+                                     Expected In Range compare with: {version} </<= {self.Version} </<= {version_max}    --> VERSION_IN_RANGE(...)
+                                     Your Entry:                     {version} {op} {self.Version} {op2} {version_max}   """,
                     )
                     message("FATAL_ERROR", err_msg)
 
@@ -685,32 +695,32 @@ class FindGLIBC(FindSDK):
                 )
             else:
                 message(
-                    "FATAL_ERROR",
-                    f"Invalid glibc version exam mode {version_require}.",
-                    ValueError,
+                    "FATAL_ERROR", f"Invalid glibc version exam mode {version_require}."
                 )
 
             result = SUCCESS if check else self._compoment_fail(condition, fail_level)
             if result is not SUCCESS:
                 reason = dedent(
-                    f"""TheRock found glibc with invalid version: {self.Version}.
-                                    TheRock build pre-diagnose system have set the version rules '{version_require}' with parameters:
-                                    > version conpare:    {version} {op} {self.Version} {op2} {version_max}
-                                    > blacklist     {blacklist}, fuzzy = {fuzzy}
+                    f"""\
+                                TheRock found glibc with invalid version: {self.Version}.
+                                TheRock build pre-diagnose system have set the version rules '{version_require}' with parameters:
+                                 > version conpare:    {version} {op} {self.Version} {op2} {version_max}
+                                 > blacklist     {blacklist}, fuzzy = {fuzzy}
 
-                                    Please contact to ROCm/TheRock Devs for further information with your version.
+                                Please contact to ROCm/TheRock Devs for further information with your version.
 
-                                    >>> traceback: Found GCC compiler program 'gcc' with invalid version {self.Version}"""
+                                 >>> traceback: Found GCC compiler program 'gcc' with invalid version {self.Version}"""
                 )
         else:
             result = self._compoment_fail(condition, fail_level)
-            reason = dedent(
-                f"""TheRock cannot find required glibc.
-                                TheRock requires glibc to compile AMD-LLVM and other ROCm libraries.
-                                Please install it via package managers.
+        reason = dedent(
+            f"""\
+                        TheRock cannot find required glibc.
+                        TheRock requires glibc to compile AMD-LLVM and other ROCm libraries.
+                        Please install it via package managers.
 
-                                    >>> traceback: Missing glibc installation"""
-            )
+                         >>> traceback: Missing glibc installation"""
+        )
 
         message("CHECK", self.Version, check_result=result)
 

@@ -156,15 +156,12 @@ class FindCMake(FindSDK):
 
         message("STATUS", "Check for CMake program available")
 
-        # 1. 處理 Min Version (既有邏輯)
         min_v = (
             VersionNum(self._cmake_minimum_required_from_CMakeLists())
             if cmake_minimum_required is None
             else VersionNum(cmake_minimum_required)
         )
 
-        # 2. [新增] 處理 Max Policy 自動封頂邏輯
-        # 如果不啟用 cmake4 且使用者沒給定上限，自動設為 3.31.11 (CMake 3 的最後防線)
         if not cmake4 and cmake_policy_max is None:
             cmake_policy_max = "3.31.11"
 

@@ -1,7 +1,6 @@
 from __future__ import annotations
 from os import environ
 from typing import Literal, Any
-from textwrap import dedent
 
 from find_SDKs import *
 from find_Devices import FindWindows, FindCPU, FindGPU, FindDRAM, FindDisk
@@ -142,6 +141,7 @@ class WindowsNT:
                 "RAM": self.RAM,
                 "Disk": self.ROM,
             },
+            "Disk FileSystem": self.DiskFileSystem.info,
             "Software configuration": {
                 "Python": self.Python.info,
                 "Astral uv": self.UV.info,

@@ -74,42 +74,33 @@ class FindCCache(FindSDK):
             .replace('"', "'")
         )
 
-        # 建立一個分類好的字典結構
         result = {
-            "info": {},  # 儲存帶有冒號的一般資訊
-            "config": {},  # 儲存 (default) 開頭的設定檔
-            "stats": {},  # 儲存底部的原始統計數據
+            "info": {},
+            "config": {},
+            "stats": {},
         }
 
-        # 預先編譯正規表達式，提高比對效率
-        # 1. 匹配設定值: (來源) 鍵 = 值
         config_pattern = re.compile(r"^\(([^)]+)\)\s+([a-zA-Z_]+)\s*=\s*(.*)$")
-        # 2. 匹配原始統計數據: 全小寫底線變數 + 數字
         stats_pattern = re.compile(r"^([a-z_]+)\s+(\d+)$")
-        # 3. 匹配一般資訊: 鍵: 值
         info_pattern = re.compile(r"^\s*([^:]+):\s*(.+)$")
 
-        # 將字串以換行符號分割，並逐行處理
         for line in ccache_query.strip().split("\n"):
-            # 略過 PowerShell 提示字元、進度條或空白行
+
             if not line or line.startswith("Scanning...") or line.startswith("(base)"):
                 continue
 
-            # 嘗試比對設定值 (Config)
             match_config = config_pattern.match(line)
             if match_config:
                 source, key, value = match_config.groups()
                 result["config"][key.strip()] = value.strip()
                 continue
 
-            # 嘗試比對原始統計數據 (Stats)
             match_stats = stats_pattern.match(line)
             if match_stats:
                 key, value = match_stats.groups()
-                result["stats"][key.strip()] = int(value)  # 將數值轉為整數
+                result["stats"][key.strip()] = int(value)
                 continue
 
-            # 嘗試比對一般資訊 (Info)
             match_info = info_pattern.match(line)
             if match_info:
                 key, value = match_info.groups()

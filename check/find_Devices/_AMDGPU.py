@@ -140,7 +140,7 @@ class AMDGPU_LLVM_TARGETS:
 
 def therock_avail_status(
     file_path: str = None,
-) -> dict[str, dict[str, str]]:  # 注意這裡型別提示改成了 dict[str, dict]
+) -> dict[str, dict[str, str]]:
 
     file_path = (
         gitrepo / "cmake/therock_amdgpu_targets.cmake"
@@ -167,8 +167,7 @@ def therock_avail_status(
 
             target_name = tokens[0].strip('"').strip()
 
-            # --- 解析 Excludes (黃框) 更新 ---
-            exclude_dict = {}  # 改用字典儲存
+            exclude_dict = {}
 
             if "EXCLUDE_TARGET_PROJECTS" in block_content:
                 parts = block_content.split("EXCLUDE_TARGET_PROJECTS", 1)
@@ -177,26 +176,22 @@ def therock_avail_status(
 
                     for line in raw_excludes.split("\n"):
                         line = line.strip()
-                        # 跳過空行或 CMake 的右括號
                         if not line or line.startswith(")"):
                             continue
 
                         if "#" in line:
-                            # 分離專案名稱與註解
                             proj_part, comment_part = line.split("#", 1)
                             proj = proj_part.strip()
                             comment = comment_part.strip()
 
                             if proj:
-                                # 嘗試從 GitHub 網址中萃取出 Issue ID
                                 if "issues/" in comment:
                                     issue_id = comment.split("issues/")[-1].strip()
                                 else:
-                                    issue_id = comment  # 若非標準網址，保留原始註解
+                                    issue_id = comment
 
                                 exclude_dict[proj] = issue_id
                         else:
-                            # 如果沒有註解 (例如純寫 composable_kernel)
                             proj = line.strip()
                             if proj:
                                 exclude_dict[proj] = "No Issue tracked"
@@ -206,7 +201,7 @@ def therock_avail_status(
         return final_dict
 
     except FileNotFoundError:
-        print(f"找不到檔案: {file_path}")
+        print(f"Cannot Find: {file_path}")
         return {}
 
 

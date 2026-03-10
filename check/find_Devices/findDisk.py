@@ -36,9 +36,6 @@ class DiskDrive(Mapping):
             ],
             Any,
         ] = raw_data
-
-        # 2. 處理特殊邏輯：虛擬硬碟判定
-        # 規則：BusType 是 SAS/SCSI 且 MediaType 是 Unspecified -> VHD/VHDX
         self._processed_media = raw_data.get("DRIVE_PHYS_TYPE", "Unknown")
         bus_type = raw_data.get("DRIVE_BUS_TYPE", "Unknown")
 
@@ -48,7 +45,6 @@ class DiskDrive(Mapping):
         if self._processed_media == "Unspecified" and bus_type in ["USB"]:
             self._processed_media = "USB"
 
-        # 4. Find Disk usage.
         drive_letter = raw_data["DRIVE_LETTER"]
         DRIVE_TOTAL_SPACE, DRIVE_USAGE_SPACE, DRIVE_AVAIL_SPACE = disk_usage(
             drive_letter
@@ -68,9 +64,8 @@ class DiskDrive(Mapping):
         self.info["DRIVE_USAGE_RATIO"] = DRIVE_USAGE_RATIO
         self.info["DRIVE_AVAIL_RATIO"] = DRIVE_AVAIL_RATIO
 
-    # --- 實作 Mapping 協議 ---
     def __getitem__(self, key: str):
-        # 允許像 dict 一樣存取屬性，方便 debug 或序列化
+
         if key == "DRIVE_PHYS_TYPE":
             return self.DRIVE_PHYS_TYPE
         if key == "DRIVE_TOTAL_PHYS":
@@ -78,14 +73,11 @@ class DiskDrive(Mapping):
         return self.info.get(key)
 
     def __iter__(self):
-        # 定義有哪些 key 可以被迭代
         key = self.info.keys()
         return iter(key)
 
     def __len__(self):
         return len(self.info.keys())
-
-    # --- 定義屬性 (Properties) ---
 
     @property
     def DRIVE_TOTAL_SPACE(self):
@@ -199,21 +191,12 @@ class DiskFileSystem(FindSDK, Mapping):
         self._dispatch_map = {}
 
     def __getitem__(self, key: str) -> DiskDrive:
-        """
-        讓物件可以透過 ['C:'] 取得對應的 DiskDrive
-        """
         return self.info[key]
 
     def __iter__(self):
-        """
-        讓物件可以被 for loop 迭代 (回傳 key)
-        """
         return iter(self.info)
 
     def __len__(self):
-        """
-        讓 len(dfs) 有作用
-        """
         return len(self.info)
 
     def __repr__(self):
@@ -284,10 +267,9 @@ class DiskFileSystem(FindSDK, Mapping):
     def __LINUX__(self) -> dict:
         import subprocess as subproc
         import json
-        import os  # 引入 os 模組用來檢查路徑
+        import os
 
         try:
-            # 使用 lsblk: -J(輸出JSON), -l(扁平化)
             cmd = [
                 "lsblk",
                 "-J",
@@ -311,8 +293,6 @@ class DiskFileSystem(FindSDK, Mapping):
             for dev in devices:
                 mountpoint = dev.get("mountpoint")
 
-                # 核心防呆：只允許以 "/" 開頭的絕對路徑，且該路徑在系統上真實存在
-                # 這樣 "[SWAP]" 或是已經卸載的幽靈路徑就會在這裡被擋下
                 if (
                     mountpoint
                     and mountpoint.startswith("/")
@@ -365,13 +345,12 @@ class DiskFileSystem(FindSDK, Mapping):
                         "DRIVE_VOL_FILESYSTEM": dev.get("fstype") or "Unknown",
                     }
 
-                    # 到這裡 raw_data 絕對是乾淨且合法的，放心交給 DiskDrive 處理
                     drive_objects[mountpoint] = DiskDrive(raw_data)
 
             return drive_objects
 
         except Exception as e:
-            from utils.color_string import message  # 確保你有正確 import message
+            from utils.color_string import message
 
             message(
                 "FATAL_ERROR", f"Linux Disk Filesystem Initialization Failed with {e}."
@@ -549,12 +528,10 @@ class FindDisk(FindSDK):
         import subprocess as subproc
         import os
 
-        # 實例化並取得所有磁碟 (抓取實體 block devices)
         dfs = DiskFileSystem()
         repo_path = gitrepo
 
         try:
-            # 尋找 repo_path 所屬的掛載點
             target_mount = (
                 subproc.run(
                     ["df", "--output=target", repo_path],
@@ -569,15 +546,11 @@ class FindDisk(FindSDK):
         except Exception:
             target_mount = "/"
 
-        # 從實體硬碟字典中查找
         repo_disk = dfs.get(target_mount)
 
-        # --- 關鍵修正：WSL (/mnt/c) 或 網路硬碟 (NFS) 容錯機制 ---
         if not repo_disk:
             if os.path.exists(target_mount):
-                # 既然存在，但不在 lsblk 裡，表示它是非區塊裝置 (如 WSL drvfs 或網盤)
                 try:
-                    # 嘗試用 df 抓它的真實檔案系統類型 (例如 9p, nfs, cifs)
                     fstype = (
                         subproc.run(
                             ["df", "-T", "--output=fstype", repo_path],
@@ -592,18 +565,16 @@ class FindDisk(FindSDK):
                 except Exception:
                     fstype = "Unknown"
 
-                # 捏造一個乾淨的 raw_data 餵給 DiskDrive
                 fallback_data = {
                     "DRIVE_LETTER": target_mount,
                     "DRIVE_INDEX": "N/A",
-                    "DRIVE_MODEL": "WSL/Network Mount",  # 標示為網路/虛擬掛載
+                    "DRIVE_MODEL": "WSL/Network Mount",
                     "DRIVE_PHYS_TYPE": "Virtual",
                     "DRIVE_BUS_TYPE": "Net/FS",
                     "DRIVE_HEALTH": "Unknown",
                     "DRIVE_PART_STYLE": "Unknown",
                     "DRIVE_VOL_FILESYSTEM": fstype,
                 }
-                # 生成替身物件，DiskDrive 會自己去呼叫 disk_usage 算容量！
                 repo_disk = DiskDrive(fallback_data)
             else:
                 from utils.color_string import message
@@ -613,7 +584,6 @@ class FindDisk(FindSDK):
                     f"Failed to map repo path {repo_path} to any known Linux mount point.",
                 )
 
-        # 回傳一模一樣結構的字典
         return {
             "REPO_PATH": repo_path,
             "REPO_DISK": repo_disk,

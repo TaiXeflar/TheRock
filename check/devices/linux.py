@@ -1,11 +1,9 @@
 from __future__ import annotations
-
+from os import environ
+from typing import Literal, Union
 
 from find_SDKs import *
 from find_Devices import FindLinux, FindCPU, FindGPU, FindDRAM, FindDisk
-
-from os import environ
-from typing import Literal, Union
 
 
 class ManyLinux:
@@ -121,6 +119,7 @@ class ManyLinux:
                 "RAM": self.RAM,
                 "Disk": self.ROM,
             },
+            "Disk FileSystem": self.DiskFileSystem.info,
             "Software configuration": {
                 "Python": self.Python,
                 "Astral uv": self.UV,

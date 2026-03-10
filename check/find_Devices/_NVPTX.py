@@ -74,12 +74,10 @@ _nvptx = {
         "NVIDIA B200",
         "NVIDIA B100",
         "NVIDIA GB200",
-        "NVIDIA GB10",  # DGX Spark 核心
-        "NVIDIA DGX Spark",  # 若整機回報以此名稱開頭
-        # Workstation (ProViz)
+        "NVIDIA GB10",  # DGX Spark
+        "NVIDIA DGX Spark",
         "NVIDIA RTX 6000 Blackwell",
-        "NVIDIA RTX Pro 6000 Blackwell",  # 依據您的需求加入
-        # Consumer (GeForce)
+        "NVIDIA RTX Pro 6000 Blackwell",
         "NVIDIA GeForce RTX 5090",
         "NVIDIA GeForce RTX 5080",
         "NVIDIA GeForce RTX 5070",
@@ -88,19 +86,11 @@ _nvptx = {
 
 
 def nvptx_sm_name(GPU: str):
-    """
-    輸入: raw_device_name (例如: 'NVIDIA A100-SXM4-40GB')
-    輸出: sm_xx (例如: 'sm_80') 或 None
-    """
-    # 轉小寫以忽略大小寫差異
-    query_name = GPU.lower().strip()
 
-    # 優先匹配較長的字串，避免誤判 (例如防止 'RTX 3080' 被誤認為 'RTX 3080 Ti')
-    # 雖然字典順序通常沒差，但這是一個好的防禦性編程習慣
+    query_name = GPU.lower().strip()
 
     for arch, models in _nvptx.items():
         for model in models:
-            # 檢查列表中的型號是否出現在查詢名稱中
             if model.lower() in query_name:
                 return arch
 
