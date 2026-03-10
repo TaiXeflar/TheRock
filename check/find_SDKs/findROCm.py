@@ -152,6 +152,7 @@ class FindROCm(FindSDK):
             )
         else:
             rocX_status["__ROCM__"] = NOTDEFINED
+            rocX_status["ROCM_DIST"] = NOTDEFINED
 
         return rocX_status
 
